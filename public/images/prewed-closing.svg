@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+<defs>
+<linearGradient id="s4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#453d36"/><stop offset="0.55" stop-color="#62574d"/><stop offset="1" stop-color="#26211d"/></linearGradient>
+<radialGradient id="w4" cx="0.78" cy="0.3" r="0.5"><stop offset="0" stop-color="#fff1dc" stop-opacity="0.55"/><stop offset="1" stop-color="#fff1dc" stop-opacity="0"/></radialGradient>
+<filter id="b4"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+<rect width="1080" height="1920" fill="url(#s4)"/>
+<g filter="url(#b4)" opacity="0.7">
+<rect x="700" y="420" width="300" height="520" fill="#fff1dc" opacity="0.35"/>
+<rect x="0" y="1300" width="1080" height="620" fill="#26211d"/>
+</g>
+<rect width="1080" height="1920" fill="url(#w4)"/>
+<g fill="#1d1a17"><circle cx="491.6" cy="1060" r="88.39999999999999"/><path d="M287.6 1920 C279.1 1332.0, 338.6 1196.0, 491.6 1187.5 S704.1 1332.0, 695.6 1920 Z"/></g><g fill="#2c2622"><circle cx="656.6" cy="1110" r="83.2"/><path d="M464.6 1920 C456.6 1366.0, 512.6 1238.0, 656.6 1230.0 S856.6 1366.0, 848.6 1920 Z"/></g>
+</svg>

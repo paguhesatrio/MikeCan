@@ -1,0 +1,204 @@
+---
+import { wedding } from '../data/wedding';
+const { music } = wedding;
+---
+
+<div class="music" data-music hidden>
+  <audio data-audio src={music.src} preload="metadata" loop data-volume={music.volume}></audio>
+  <button type="button" class="vinyl" data-music-toggle aria-pressed="false" aria-label="Putar musik">
+    <span class="vinyl__disc" aria-hidden="true">
+      <img class="vinyl__label" src={music.cover} alt="" width="120" height="120" loading="lazy" decoding="async" />
+      <span class="vinyl__hole"></span>
+    </span>
+    <span class="vinyl__badge" aria-hidden="true">
+      <svg class="vinyl__icon vinyl__icon--play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+      <svg class="vinyl__icon vinyl__icon--pause" viewBox="0 0 24 24"><path d="M7 5.5h3.5v13H7zM13.5 5.5H17v13h-3.5z" fill="currentColor" /></svg>
+    </span>
+  </button>
+</div>
+
+<style>
+  .music {
+    position: fixed;
+    z-index: 55;
+    left: calc(var(--panel-start, 0px) + 0.75rem);
+    bottom: calc(5.4rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .vinyl {
+    position: relative;
+    display: block;
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .vinyl__disc {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    /* alur piringan hitam */
+    background:
+      radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.18), transparent 38%),
+      repeating-radial-gradient(circle, #1c1c1c 0 1.5px, #2b2b2b 1.5px 3px);
+    box-shadow:
+      0 0 0 2px rgb(255 255 255 / 0.85),
+      0 6px 18px rgb(0 0 0 / 0.3);
+    animation: spin 5s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .vinyl__label {
+    position: absolute;
+    inset: 22%;
+    width: 56%;
+    height: 56%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1c1c1c;
+  }
+
+  .vinyl__hole {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: #f3eeec;
+  }
+
+  .vinyl__badge {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 1.35rem;
+    height: 1.35rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--ink);
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .vinyl__icon {
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+  .vinyl__icon--pause {
+    display: none;
+  }
+
+  .vinyl[aria-pressed='true'] .vinyl__disc {
+    animation-play-state: running;
+  }
+  .vinyl[aria-pressed='true'] .vinyl__icon--play {
+    display: none;
+  }
+  .vinyl[aria-pressed='true'] .vinyl__icon--pause {
+    display: block;
+  }
+
+  .vinyl:active {
+    transform: scale(0.95);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vinyl__disc {
+      animation: none;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-music]');
+  const audio = wrap?.querySelector<HTMLAudioElement>('[data-audio]');
+  const btn = wrap?.querySelector<HTMLButtonElement>('[data-music-toggle]');
+
+  if (wrap && audio && btn) {
+    // File bisa saja sudah gagal dimuat sebelum skrip ini berjalan
+    let available = !audio.error && audio.networkState !== HTMLMediaElement.NETWORK_NO_SOURCE;
+    let loaded = audio.readyState >= 1;
+    let opened = false;
+    let wantsPlay = false; // apakah tamu ingin musik menyala
+    audio.volume = Number(audio.dataset.volume ?? 0.6);
+
+    const render = () => {
+      const playing = !audio.paused;
+      btn.setAttribute('aria-pressed', String(playing));
+      btn.setAttribute('aria-label', playing ? 'Jeda musik' : 'Putar musik');
+    };
+
+    const play = async () => {
+      if (!available) return;
+      try {
+        await audio.play();
+      } catch {
+        /* diblokir browser atau file tidak ada: biarkan tombol dalam posisi jeda */
+      }
+      render();
+    };
+
+    // Tombol hanya muncul bila undangan sudah dibuka DAN file lagu benar-benar ada
+    const show = () => {
+      opened = true;
+      if (available && loaded) wrap.hidden = false;
+    };
+
+    audio.addEventListener('loadedmetadata', () => {
+      loaded = true;
+      if (opened) show();
+    });
+    audio.addEventListener('error', () => {
+      available = false;
+      wrap.hidden = true;
+    });
+    // iOS tidak memuat metadata sebelum ada interaksi; anggap tersedia begitu lagu bisa diputar
+    audio.addEventListener('play', () => {
+      loaded = true;
+      if (opened) show();
+      render();
+    });
+    audio.addEventListener('pause', render);
+
+    // Mulai musik bersamaan dengan tombol "Buka Undangan" (butuh interaksi pengguna)
+    document.querySelectorAll('[data-open-invitation]').forEach((el) =>
+      el.addEventListener('click', () => {
+        wantsPlay = true;
+        show();
+        play();
+      }),
+    );
+
+    // Undangan dibuka lewat tautan langsung (#rsvp dst.): tampilkan tombol, tanpa autoplay
+    if (document.documentElement.classList.contains('is-open')) show();
+
+    btn.addEventListener('click', () => {
+      if (audio.paused) {
+        wantsPlay = true;
+        play();
+      } else {
+        wantsPlay = false;
+        audio.pause();
+      }
+    });
+
+    // Jeda saat tab/aplikasi ditinggalkan, lanjut lagi saat kembali
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) audio.pause();
+      else if (wantsPlay) play();
+    });
+  }
+</script>

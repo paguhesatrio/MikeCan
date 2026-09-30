@@ -1,0 +1,171 @@
+---
+interface Props {
+  src?: string;
+  poster?: string;
+  /** Lama tampil GIF dalam milidetik (GIF tidak punya event "selesai") */
+  duration?: number;
+}
+const { src = "/video/intro.mp4", poster, duration = 5000 } = Astro.props;
+const isGif = src.toLowerCase().endsWith(".gif");
+---
+
+<div
+  class="intro-video"
+  data-intro-video
+  data-duration={duration}
+  role="dialog"
+  aria-label="Video pembuka"
+>
+  {
+    isGif ? (
+      <img class="intro-video__media" src={src} alt="" data-intro-gif />
+    ) : (
+      <video
+        class="intro-video__media"
+        src={src}
+        poster={poster}
+        muted
+        playsinline
+        preload="auto"
+        data-intro-media
+      />
+    )
+  }
+
+  <button type="button" class="intro-video__play" data-intro-play hidden>
+    Putar video
+  </button>
+
+  <button type="button" class="intro-video__skip" data-intro-skip>
+    Lewati
+  </button>
+</div>
+
+<style>
+  .intro-video {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%; /* diganti otomatis oleh script agar sama dengan .panel */
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background: #000;
+    transition: opacity 0.8s ease;
+  }
+  .intro-video.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .intro-video__media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .intro-video__play {
+    position: absolute;
+    padding: 0.8rem 1.6rem;
+    border: 1px solid rgb(255 255 255 / 0.8);
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.35);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .intro-video__skip {
+    position: absolute;
+    right: 1.25rem;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.5rem 1.1rem;
+    border: 1px solid rgb(255 255 255 / 0.6);
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.3);
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .intro-video__play:focus-visible,
+  .intro-video__skip:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+</style>
+
+<style is:global>
+  html.intro-lock,
+  html.intro-lock body {
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-intro-video]");
+  if (root) {
+    const skip = root.querySelector<HTMLButtonElement>("[data-intro-skip]")!;
+    const play = root.querySelector<HTMLButtonElement>("[data-intro-play]")!;
+    const video = root.querySelector<HTMLVideoElement>("[data-intro-media]");
+    const gif = root.querySelector<HTMLImageElement>("[data-intro-gif]");
+    const duration = Number(root.dataset.duration) || 5000;
+    let closed = false;
+    let gifTimer = 0;
+
+    document.documentElement.classList.add("intro-lock");
+
+    // Samakan posisi & lebar dengan kolom undangan (.panel)
+    const panel = document.querySelector<HTMLElement>(".panel");
+    const fit = () => {
+      if (!panel) return;
+      const r = panel.getBoundingClientRect();
+      root.style.left = `${r.left}px`;
+      root.style.width = `${r.width}px`;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      window.removeEventListener("resize", fit);
+      window.clearTimeout(gifTimer);
+      video?.pause();
+      root.classList.add("is-leaving");
+      document.documentElement.classList.remove("intro-lock");
+      root.addEventListener("transitionend", () => root.remove(), {
+        once: true,
+      });
+      window.setTimeout(() => root.remove(), 1200);
+    };
+
+    skip.addEventListener("click", close);
+
+    if (gif) {
+      // GIF: tutup otomatis setelah durasi yang ditentukan
+      const start = () => {
+        gifTimer = window.setTimeout(close, duration);
+      };
+      if (gif.complete && gif.naturalWidth > 0) {
+        start();
+      } else {
+        gif.addEventListener("load", start, { once: true });
+        gif.addEventListener("error", close, { once: true });
+      }
+    } else if (video) {
+      video.addEventListener("ended", close);
+      video.addEventListener("error", close);
+
+      play.addEventListener("click", () => {
+        play.hidden = true;
+        video.play().catch(close);
+      });
+
+      // Autoplay bisa diblokir browser; jika gagal, tampilkan tombol putar
+      video.play().catch(() => {
+        play.hidden = false;
+      });
+    }
+  }
+</script>

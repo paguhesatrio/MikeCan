@@ -1,0 +1,6 @@
+Taruh file lagu di folder ini dengan nama lagu.mp3
+(atau ubah music.src di src/data/wedding.ts).
+
+Saran: format MP3, 128 kbps, durasi 2–4 menit (ukuran sekitar 2–4 MB),
+dan pastikan Anda memiliki izin untuk memakai lagu tersebut.
+File ini boleh dihapus.

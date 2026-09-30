@@ -1,0 +1,1298 @@
+---
+/**
+ * CERITA KAMI
+ * Judul, kalimat pembuka, dan polaroid tetap seperti biasa.
+ * Timeline diganti game platformer tampak samping di dalam bingkai TV retro.
+ * Kamera mengikuti karakter pria (dunia bergeser saat ia berjalan ke kanan),
+ * ia melompati rintangan, bertemu karakter wanita di checkpoint 1,
+ * lalu keduanya berjalan berdua sampai kapel. Setiap checkpoint menampilkan dialog
+ * dari story.milestones di wedding.ts.
+ */
+import "@fontsource/pixelify-sans/latin-400.css";
+import "@fontsource/pixelify-sans/latin-600.css";
+import { wedding } from "../data/wedding";
+import SectionHead from "./ui/SectionHead.astro";
+import PhotoSection from "./ui/PhotoSection.astro";
+
+const { story } = wedding;
+const N = story.milestones.length;
+
+/* ---------- Dunia samping ala game platformer (layar 300 × 180) ---------- */
+const VIEW_W = 300;
+const VIEW_TOP = 60; // bagian dunia yang terlihat: y 60–240
+const GROUND = 196; // garis tanah (kaki karakter)
+const START_X = 60;
+const STEP = 520; // jarak antar checkpoint
+const cpX = story.milestones.map((_, i) => 300 + i * STEP);
+const lastX = cpX[N - 1];
+const chapelX = lastX + 95;
+const WORLD_W = chapelX + 150;
+// satu rintangan kecil di tengah setiap perjalanan (dilompati otomatis)
+const obstacles = cpX.map((x, i) => ((i === 0 ? START_X : cpX[i - 1]) + x) / 2);
+
+// dekorasi dunia (diulang sepanjang peta)
+const range = (from: number, to: number, step: number) => {
+  const out: number[] = [];
+  for (let x = from; x < to; x += step) out.push(x);
+  return out;
+};
+const cloudsX = range(20, WORLD_W * 0.25 + VIEW_W, 150);
+const hillsX = range(-60, WORLD_W * 0.55 + VIEW_W, 230);
+const bushesX = range(120, WORLD_W - 120, 170).filter((x) =>
+  obstacles.every((o) => Math.abs(o - x) > 50),
+);
+const treesX = range(210, WORLD_W - 200, 340);
+
+/* ---------- Sprite piksel ---------- */
+type Px = { x: number; y: number; w: number; c: string };
+const toRects = (
+  rows: string[],
+  palette: Record<string, string>,
+  yOffset = 0,
+): Px[] => {
+  const out: Px[] = [];
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      if (ch === ".") {
+        x++;
+        continue;
+      }
+      let w = 1;
+      while (row[x + w] === ch) w++;
+      out.push({ x, y: y + yOffset, w, c: palette[ch] });
+      x += w;
+    }
+  });
+  return out;
+};
+
+const boyPal = {
+  H: "#2b1d16",
+  S: "#e2b48d",
+  E: "#161616",
+  W: "#f3efe7",
+  J: "#2d3858",
+  P: "#22242b",
+  B: "#111111",
+  T: "#b8453f",
+};
+const boyBody = toRects(
+  [
+    "...HHHHH....",
+    "..HHHHHHH...",
+    "..HHHHHHHS..",
+    "..HHSSSESS..",
+    "..HSSSSSSS..",
+    "...SSSSSS...",
+    "....SSSS....",
+    "..JJJWTJJ...",
+    ".JJJJWTJJJ..",
+    ".SJJJWWJJS..",
+    ".SJJJJJJJS..",
+    "..JJJJJJJ...",
+  ],
+  boyPal,
+);
+const boyLegsA = toRects(
+  ["..PPP.PPP...", "..PPP..PPP..", "..PP....PP..", ".BBB....BBB."],
+  boyPal,
+  12,
+);
+const boyLegsB = toRects(
+  ["...PPPPP....", "...PPPPP....", "....PPP.....", "...BBBBB...."],
+  boyPal,
+  12,
+);
+
+const girlPal = {
+  L: "#4a2c20",
+  S: "#e8bf9b",
+  E: "#161616",
+  D: "#f1e9dd",
+  R: "#e8c07a",
+  B: "#7a5a48",
+};
+const girlBody = toRects(
+  [
+    "...LLLLL....",
+    "..LLLLLLL...",
+    ".LLLLLLLLS..",
+    ".LLLSSSESS..",
+    ".LLSSSSSSS..",
+    ".LLLSSSSS...",
+    ".LLL.SSS....",
+    ".LLDDDDDD...",
+    "..DDRRRRDD..",
+    ".SDDDDDDDS..",
+    ".SDDDDDDDDS.",
+    "..DDDDDDDD..",
+    ".DDDDDDDDDD.",
+  ],
+  girlPal,
+);
+const girlLegsA = toRects(
+  [".DDDDDDDDDD.", "...SS..SS...", "..BBB..BBB.."],
+  girlPal,
+  13,
+);
+const girlLegsB = toRects(
+  ["..DDDDDDDD..", "....SSSS....", "....BBBB...."],
+  girlPal,
+  13,
+);
+
+const tree = toRects(
+  [
+    "....GGGG....",
+    "..GGGGGGGG..",
+    ".GGgGGGGGGG.",
+    "GGGGGGgGGGGG",
+    "GGgGGGGGGGGG",
+    "GGGGGGGGgGGG",
+    ".GGGGgGGGGG.",
+    "..GGGGGGGG..",
+    "....TTTT....",
+    "....TTTT....",
+  ],
+  { G: "#2f4c34", g: "#3f6443", T: "#6b4a32" },
+);
+
+const chapelPx = toRects(
+  [
+    ".........CC.........",
+    "........CCCC........",
+    ".........CC.........",
+    "........RRRR........",
+    ".......RRRRRR.......",
+    "......RRRRRRRR......",
+    ".....RRRRRRRRRR.....",
+    "....RRRRRRRRRRRR....",
+    "...RRRRRRRRRRRRRR...",
+    "..RRRRRRRRRRRRRRRR..",
+    "..WWWWWWWWWWWWWWWW..",
+    "..WWWbbWWWWWWbbWWW..",
+    "..WWWbbWWWWWWbbWWW..",
+    "..WWWWWWWDDWWWWWWW..",
+    "..WWWWWWDDDDWWWWWW..",
+    "..WWWWWWDDDDWWWWWW..",
+    "..WWWWWWDDDDWWWWWW..",
+    ".SSSSSSSSSSSSSSSSSS.",
+  ],
+  {
+    C: "#e8c07a",
+    R: "#7b3b33",
+    W: "#efe8dc",
+    b: "#8fb3c9",
+    D: "#5a3a2a",
+    S: "#9c8f7c",
+  },
+);
+
+const cloud = toRects(
+  [
+    ".....WWWW.......",
+    "...WWWWWWWW.....",
+    "..WWWWWWWWWWWW..",
+    ".WWWWWWWWWWWWWW.",
+    "WWWWWWWWWWWWWWWW",
+    ".SSSSSSSSSSSSSS.",
+  ],
+  { W: "#ffffff", S: "#dbe8f2" },
+);
+
+const bush = toRects(
+  [
+    "...GGGG..GGG...",
+    "..GGgGGGGGgGG..",
+    ".GGGGGGGGGGGGG.",
+    "GGGgGGGGGGgGGGG",
+    "GGGGGGGGGGGGGGG",
+  ],
+  { G: "#3f7a3a", g: "#5c9a4f" },
+);
+
+const rock = toRects(
+  [
+    "...RRRRR...",
+    "..RRrRRRR..",
+    ".RRRRRRrRR.",
+    "RRrRRRRRRRR",
+    "RRRRRRRRRRR",
+    "DDDDDDDDDDD",
+  ],
+  { R: "#8d8a84", r: "#b3afa7", D: "#5f5c57" },
+);
+---
+
+<PhotoSection
+  id="cerita"
+  photo={wedding.photos.story}
+  shade="strong"
+  labelledby="cerita-title"
+>
+  <div class="container">
+    <SectionHead id="cerita-title" title="Cerita Kami" subtitle={story.lead} />
+
+    <!-- <figure class="polaroid" data-reveal>
+      <img
+        src={story.photo}
+        alt={story.photoAlt}
+        width="720"
+        height="720"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption>M &amp; C, sejak 2019</figcaption>
+    </figure> -->
+
+    <!-- Versi teks: untuk pembaca layar & bila JavaScript mati -->
+    <ol class="story-list">
+      {
+        story.milestones.map((m) => (
+          <li>
+            <p class="story-list__date">{m.date}</p>
+            <h3 class="story-list__title">{m.title}</h3>
+            <p class="story-list__text">{m.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <!-- Game di dalam TV: tinggi "rel" ini menentukan panjang scroll game -->
+    <div class="tv-track" style={`--steps:${N}`} data-rpg aria-hidden="true">
+      <div class="tv" data-tv>
+        <div class="tv__antenna"><span></span><span></span></div>
+
+        <div class="tv__body">
+          <div class="tv__bezel">
+            <div class="tv__screen" data-screen>
+              <!-- HUD -->
+              <div class="hud">
+                <span class="hud__title">Cerita Kami</span>
+                <span class="hud__right">
+                  <span class="hud__chapter" data-chapter>0/{N}</span>
+                  {
+                    story.milestones.map(() => (
+                      <svg class="hud__heart" viewBox="0 0 7 6">
+                        <path d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z" />
+                      </svg>
+                    ))
+                  }
+                </span>
+              </div>
+
+              <!-- Dunia game: kamera mengikuti karakter pria -->
+              <svg
+                class="game"
+                viewBox={`0 ${VIEW_TOP} ${VIEW_W} 180`}
+                preserveAspectRatio="xMidYMid slice"
+                shape-rendering="crispEdges"
+              >
+                <defs>
+                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#7fb0dc"></stop>
+                    <stop offset="1" stop-color="#cfe4ef"></stop>
+                  </linearGradient>
+                  <pattern
+                    id="dirt"
+                    width="20"
+                    height="20"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="20" height="20" fill="#9c6d44"></rect>
+                    <rect y="9" width="20" height="1" fill="#7d5433"></rect>
+                    <rect y="19" width="20" height="1" fill="#7d5433"></rect>
+                    <rect x="9" width="1" height="9" fill="#7d5433"></rect>
+                    <rect x="19" y="10" width="1" height="9" fill="#7d5433"
+                    ></rect>
+                    <rect x="3" y="3" width="2" height="2" fill="#b0825a"
+                    ></rect>
+                    <rect x="13" y="13" width="2" height="2" fill="#b0825a"
+                    ></rect>
+                  </pattern>
+                </defs>
+
+                <!-- langit (diam) -->
+                <rect y={VIEW_TOP} width={VIEW_W} height="180" fill="url(#sky)"
+                ></rect>
+
+                <!-- lapis jauh: awan (bergerak paling lambat) -->
+                <g data-layer="0.25">
+                  {
+                    cloudsX.map((x, i) => (
+                      <g
+                        transform={`translate(${x} ${VIEW_TOP + 8 + (i % 3) * 13}) scale(${i % 2 ? 1.8 : 2.3})`}
+                      >
+                        {cloud.map((r) => (
+                          <rect
+                            x={r.x}
+                            y={r.y}
+                            width={r.w}
+                            height="1"
+                            fill={r.c}
+                          />
+                        ))}
+                      </g>
+                    ))
+                  }
+                </g>
+
+                <!-- lapis tengah: bukit -->
+                <g data-layer="0.55" shape-rendering="auto">
+                  {
+                    hillsX.map((x, i) => (
+                      <path
+                        d={`M${x} ${GROUND + 4} Q${x + 80} ${GROUND - (i % 2 ? 90 : 120)} ${x + 160} ${GROUND + 4} Z`}
+                        fill={i % 2 ? "#8fbf7a" : "#7aae66"}
+                        stroke="#5d8c4c"
+                        stroke-width="2"
+                      />
+                    ))
+                  }
+                </g>
+
+                <!-- lapis depan: tanah, dekorasi, karakter (kecepatan penuh) -->
+                <g data-layer="1">
+                  {
+                    treesX.map((x) => (
+                      <g
+                        transform={`translate(${x} ${GROUND - 48}) scale(4 4.8)`}
+                      >
+                        {tree.map((r) => (
+                          <rect
+                            x={r.x}
+                            y={r.y}
+                            width={r.w}
+                            height="1"
+                            fill={r.c}
+                          />
+                        ))}
+                      </g>
+                    ))
+                  }
+                  {
+                    bushesX.map((x) => (
+                      <g
+                        transform={`translate(${x} ${GROUND - 12}) scale(2.4)`}
+                      >
+                        {bush.map((r) => (
+                          <rect
+                            x={r.x}
+                            y={r.y}
+                            width={r.w}
+                            height="1"
+                            fill={r.c}
+                          />
+                        ))}
+                      </g>
+                    ))
+                  }
+
+                  <!-- tanah -->
+                  <rect
+                    x="-20"
+                    y={GROUND}
+                    width={WORLD_W + 40}
+                    height={240 - GROUND}
+                    fill="url(#dirt)"></rect>
+                  <rect
+                    x="-20"
+                    y={GROUND}
+                    width={WORLD_W + 40}
+                    height="7"
+                    fill="#6aa84f"></rect>
+                  <rect
+                    x="-20"
+                    y={GROUND + 7}
+                    width={WORLD_W + 40}
+                    height="2"
+                    fill="#4f8a3a"></rect>
+
+                  <!-- papan mulai -->
+                  <g transform={`translate(${START_X - 50} ${GROUND - 34})`}>
+                    <rect x="14" y="16" width="4" height="18" fill="#5a3d27"
+                    ></rect>
+                    <rect x="0" y="0" width="34" height="17" fill="#8a5d3b"
+                    ></rect>
+                    <rect x="2" y="2" width="30" height="13" fill="#a8764d"
+                    ></rect>
+                    <text x="17" y="12" text-anchor="middle" class="sign-text"
+                      >MULAI</text
+                    >
+                  </g>
+
+                  <!-- rintangan -->
+                  {
+                    obstacles.map((x) => (
+                      <g
+                        transform={`translate(${x - 16} ${GROUND - 17}) scale(3 2.9)`}
+                      >
+                        {rock.map((r) => (
+                          <rect
+                            x={r.x}
+                            y={r.y}
+                            width={r.w}
+                            height="1"
+                            fill={r.c}
+                          />
+                        ))}
+                      </g>
+                    ))
+                  }
+
+                  <!-- kapel di ujung -->
+                  <g
+                    transform={`translate(${chapelX - 45} ${GROUND - 81}) scale(4.5)`}
+                  >
+                    {
+                      chapelPx.map((r) => (
+                        <rect
+                          x={r.x}
+                          y={r.y}
+                          width={r.w}
+                          height="1"
+                          fill={r.c}
+                        />
+                      ))
+                    }
+                  </g>
+
+                  <!-- checkpoint: tiang bendera -->
+                  {
+                    cpX.map((x, i) => (
+                      <g
+                        class="flag"
+                        data-flag={i}
+                        transform={`translate(${x - 34} ${GROUND - 64})`}
+                      >
+                        <rect
+                          x="0"
+                          y="0"
+                          width="3"
+                          height="64"
+                          fill="#e9e4da"
+                        />
+                        <rect
+                          x="-1"
+                          y="-4"
+                          width="5"
+                          height="5"
+                          fill="#e8c07a"
+                        />
+                        <path class="flag__cloth" d="M3 4h20v6h-4v6h4v6H3z" />
+                        <text x="10" y="16" class="flag__num">
+                          {i + 1}
+                        </text>
+                        <rect
+                          x="-4"
+                          y="60"
+                          width="11"
+                          height="4"
+                          fill="#6b6259"
+                        />
+                      </g>
+                    ))
+                  }
+
+                  <g class="walker" data-girl>
+                    <g class="walker__flip">
+                      <g class="walker__body"
+                        >{
+                          girlBody.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                      <g class="walker__legs-a"
+                        >{
+                          girlLegsA.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                      <g class="walker__legs-b"
+                        >{
+                          girlLegsB.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                    </g>
+                  </g>
+
+                  <g class="walker" data-boy>
+                    <g class="walker__flip">
+                      <g class="walker__body"
+                        >{
+                          boyBody.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                      <g class="walker__legs-a"
+                        >{
+                          boyLegsA.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                      <g class="walker__legs-b"
+                        >{
+                          boyLegsB.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))
+                        }</g
+                      >
+                    </g>
+                  </g>
+
+                  <g class="love" data-love>
+                    <path
+                      d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z"
+                      fill="#e26d6d"
+                      transform="scale(2)"></path>
+                  </g>
+                </g>
+              </svg>
+
+              <!-- Dialog -->
+              <div class="dialog">
+                <img
+                  class="dialog__avatar"
+                  data-avatar
+                  src={wedding.groom.photo}
+                  alt=""
+                  width="96"
+                  height="96"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div>
+                  <p class="dialog__label" data-label>Mulai</p>
+                  <p class="dialog__name" data-name>Cerita Kami</p>
+                  <p class="dialog__text" data-text>{story.leads}</p>
+                </div>
+                <span class="dialog__next" data-next>▼</span>
+              </div>
+
+              <div class="tv__glass" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <div class="tv__panel">
+            <div class="tv__speaker"></div>
+            <span class="tv__brand">M&amp;C</span>
+            <span class="tv__led" data-led></span>
+            <span class="tv__knob"></span>
+            <span class="tv__knob tv__knob--small"></span>
+          </div>
+        </div>
+        <div class="tv__feet"><span></span><span></span></div>
+
+        <p class="tv__hint" data-hint>▼ Scroll untuk memulai cerita</p>
+      </div>
+    </div>
+
+    <script
+      type="application/json"
+      data-rpg-data
+      set:html={JSON.stringify({
+        lead: story.leads,
+        milestones: story.milestones,
+        cpX,
+        startX: START_X,
+        obstacles,
+        ground: GROUND,
+        viewW: VIEW_W,
+        worldW: WORLD_W,
+        boyPhoto: wedding.groom.photo,
+        couplePhoto: story.photo,
+      })}
+    />
+  </div>
+</PhotoSection>
+
+<style>
+  /* ---------- Polaroid ---------- */
+  .polaroid {
+    width: min(74cqi, 16rem);
+    margin: 0 auto 3rem;
+    padding: 0.7rem 0.7rem 0;
+    background: var(--paper);
+    border-radius: 3px;
+    box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.6);
+    rotate: -3deg;
+  }
+  .polaroid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+  .polaroid figcaption {
+    padding: 0.6rem 0 0.75rem;
+    text-align: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  /* ---------- Versi teks (tanpa JavaScript) ---------- */
+  .story-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+  }
+  .story-list__date {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .story-list__title {
+    font-size: 1.4rem;
+    font-weight: 400;
+  }
+  .story-list__text {
+    color: var(--text-soft);
+  }
+  .tv-track {
+    display: none;
+  }
+
+  /* ---------- Dengan JavaScript: game di dalam TV ---------- */
+  :global(.js) .story-list {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  :global(.js) .tv-track {
+    display: block;
+    position: relative;
+    /* panjang scroll: tinggi TV + ±70% layar untuk setiap checkpoint */
+    height: calc(34rem + var(--steps) * 70svh);
+  }
+
+  .tv {
+    position: sticky;
+    top: max(1rem, calc(50svh - 17rem));
+    width: min(100%, 22rem);
+    margin-inline: auto;
+    font-family: "Pixelify Sans", monospace;
+  }
+
+  /* antena */
+  .tv__antenna {
+    position: relative;
+    height: 3.2rem;
+  }
+  .tv__antenna::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -0.2rem;
+    width: 3rem;
+    height: 1.4rem;
+    translate: -50% 0;
+    border-radius: 999px 999px 0 0;
+    background: #2a211c;
+  }
+  .tv__antenna span {
+    position: absolute;
+    left: 50%;
+    bottom: 0.6rem;
+    width: 2px;
+    height: 3rem;
+    background: #bfb6aa;
+    transform-origin: bottom center;
+  }
+  .tv__antenna span:first-child {
+    rotate: -32deg;
+  }
+  .tv__antenna span:last-child {
+    rotate: 28deg;
+  }
+  .tv__antenna span::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d9d0c3;
+  }
+
+  /* badan TV */
+  .tv__body {
+    position: relative;
+    padding: 0.8rem 0.8rem 0;
+    border-radius: 22px;
+    background:
+      linear-gradient(160deg, rgb(255 255 255 / 0.1), transparent 40%),
+      repeating-linear-gradient(90deg, #5b3e2c 0 6px, #573b2a 6px 13px);
+    box-shadow:
+      inset 0 0 0 2px rgb(0 0 0 / 0.35),
+      0 24px 50px -16px rgb(0 0 0 / 0.8);
+  }
+  .tv__bezel {
+    padding: 0.55rem;
+    border-radius: 18px;
+    background: #141312;
+    box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.8);
+  }
+
+  .tv__screen {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    border-radius: 16px / 20px;
+    overflow: hidden;
+    background: #7fb0dc;
+    transform-origin: center;
+  }
+
+  /* efek kaca tabung: garis scan + kilau + vinyet */
+  .tv__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgb(0 0 0 / 0.12) 0 1px,
+        transparent 1px 3px
+      ),
+      radial-gradient(
+        ellipse at 30% 10%,
+        rgb(255 255 255 / 0.16),
+        transparent 45%
+      ),
+      radial-gradient(ellipse at center, transparent 60%, rgb(0 0 0 / 0.45));
+  }
+
+  /* layar menyala saat TV pertama kali terlihat */
+  @media (prefers-reduced-motion: no-preference) {
+    .tv__screen {
+      clip-path: inset(49% 0 49% 0);
+      filter: brightness(3);
+      transition:
+        clip-path 0.55s steps(6, end),
+        filter 0.8s ease;
+    }
+    .tv.is-on .tv__screen {
+      clip-path: inset(0);
+      filter: none;
+    }
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0.6rem;
+    background: rgb(14 16 14 / 0.85);
+    color: #fff;
+    font-size: 0.8rem;
+  }
+  .hud__title {
+    font-weight: 600;
+  }
+  .hud__right {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .hud__chapter {
+    margin-right: 0.35rem;
+    color: var(--accent);
+  }
+  .hud__heart {
+    width: 12px;
+    height: 10px;
+    fill: #4a4a4a;
+    shape-rendering: crispEdges;
+    transition: fill 0.3s;
+  }
+  .hud__heart.is-on {
+    fill: #e26d6d;
+  }
+
+  /* peta */
+  .game {
+    display: block;
+    width: 100%;
+    aspect-ratio: 300 / 180;
+  }
+  .sign-text {
+    font-family: "Pixelify Sans", monospace;
+    font-size: 7px;
+    font-weight: 600;
+    fill: #fff7e6;
+  }
+  .flag__cloth {
+    fill: #cfc7ba;
+    transition: fill 0.4s;
+  }
+  .flag__num {
+    font-family: "Pixelify Sans", monospace;
+    font-size: 9px;
+    font-weight: 600;
+    fill: #1b1b1b;
+  }
+  .flag.is-reached .flag__cloth {
+    fill: var(--accent);
+  }
+
+  .walker__flip {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .walker.is-left .walker__flip {
+    transform: scaleX(-1);
+  }
+  .walker__legs-b {
+    opacity: 0;
+  }
+  .tv-track.is-walking .walker.is-moving .walker__legs-a {
+    animation: legA 0.32s steps(1, end) infinite;
+  }
+  .tv-track.is-walking .walker.is-moving .walker__legs-b {
+    animation: legB 0.32s steps(1, end) infinite;
+  }
+  .tv-track.is-walking .walker.is-moving .walker__body {
+    animation: bob 0.32s steps(1, end) infinite;
+  }
+  @keyframes legA {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes legB {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes bob {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-1px);
+    }
+  }
+
+  .love {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .love.is-on {
+    opacity: 1;
+  }
+
+  /* dialog */
+  .dialog {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    min-height: 8.6rem;
+    padding: 0.6rem 0.7rem 0.9rem;
+    background: rgb(14 16 14 / 0.94);
+    border-top: 3px solid #f1e9dd;
+    color: #ece7df;
+  }
+  .dialog__avatar {
+    width: 2.8rem;
+    height: 2.8rem;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+    background: #2a2a2a;
+  }
+  .dialog__label {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .dialog__name {
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+  }
+  .dialog__text {
+    margin-top: 0.25rem;
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+  .dialog__next {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.2rem;
+    font-size: 0.7rem;
+    color: var(--accent);
+    opacity: 0;
+  }
+  .dialog__next.is-on {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dialog__next.is-on {
+      animation: blink 0.9s steps(1, end) infinite;
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* panel kontrol di bawah layar */
+  .tv__panel {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 0.4rem 0.8rem;
+  }
+  .tv__speaker {
+    flex: 1;
+    height: 1.6rem;
+    border-radius: 4px;
+    background: repeating-linear-gradient(
+      90deg,
+      #2a1d15 0 3px,
+      #6b4a36 3px 6px
+    );
+    opacity: 0.8;
+  }
+  .tv__brand {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e8dccb;
+    letter-spacing: 0.08em;
+  }
+  .tv__led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5a2a24;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .tv.is-on .tv__led {
+    background: #ff6b5a;
+    box-shadow: 0 0 8px #ff6b5a;
+  }
+  .tv__knob {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #d9cfc2, #8c8174 70%);
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.4);
+    position: relative;
+  }
+  .tv__knob::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 3px;
+    width: 2px;
+    height: 0.55rem;
+    translate: -50% 0;
+    background: #3a332c;
+  }
+  .tv__knob--small {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .tv__feet {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2.5rem;
+  }
+  .tv__feet span {
+    width: 1.4rem;
+    height: 0.7rem;
+    background: #2a211c;
+    border-radius: 0 0 6px 6px;
+  }
+
+  .tv__hint {
+    margin-top: 0.9rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    transition: opacity 0.3s;
+  }
+  .tv__hint.is-hidden {
+    opacity: 0;
+  }
+</style>
+
+<script>
+  type Milestone = { date: string; title: string; text: string };
+
+  const track = document.querySelector<HTMLElement>("[data-rpg]");
+  const dataEl = document.querySelector<HTMLScriptElement>("[data-rpg-data]");
+
+  if (track && dataEl) {
+    const data = JSON.parse(dataEl.textContent || "{}") as {
+      lead: string;
+      milestones: Milestone[];
+      cpX: number[];
+      startX: number;
+      obstacles: number[];
+      ground: number;
+      viewW: number;
+      worldW: number;
+      boyPhoto: string;
+      couplePhoto: string;
+    };
+    const N = data.milestones.length;
+    const WALK = 0.6; // 60% scroll tiap bab dipakai berjalan, sisanya berhenti membaca dialog
+    const SCALE = 2; // besar karakter
+    const PARTNER = 22; // jarak wanita di depan pria
+    const CAMERA = 0.3; // posisi pria di layar (30% dari kiri), sisanya "tidak terlihat" di depan
+    const JUMP_H = 34; // tinggi lompatan
+    const JUMP_W = 34; // setengah lebar lompatan
+
+    const tv = track.querySelector<HTMLElement>("[data-tv]")!;
+    const layers = Array.from(
+      track.querySelectorAll<SVGGElement>("[data-layer]"),
+    );
+    const boy = track.querySelector<SVGGElement>("[data-boy]")!;
+    const girl = track.querySelector<SVGGElement>("[data-girl]")!;
+    const love = track.querySelector<SVGGElement>("[data-love]")!;
+    const flags = Array.from(
+      track.querySelectorAll<SVGGElement>("[data-flag]"),
+    );
+    const hearts = Array.from(
+      track.querySelectorAll<SVGElement>(".hud__heart"),
+    );
+    const chapter = track.querySelector<HTMLElement>("[data-chapter]")!;
+    const avatar = track.querySelector<HTMLImageElement>("[data-avatar]")!;
+    const label = track.querySelector<HTMLElement>("[data-label]")!;
+    const nameEl = track.querySelector<HTMLElement>("[data-name]")!;
+    const textEl = track.querySelector<HTMLElement>("[data-text]")!;
+    const nextEl = track.querySelector<HTMLElement>("[data-next]")!;
+    const hint = track.querySelector<HTMLElement>("[data-hint]")!;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // tinggi lompatan saat melewati rintangan (lengkung parabola)
+    const jumpAt = (x: number) => {
+      for (const o of data.obstacles) {
+        const d = (x - o) / JUMP_W;
+        if (Math.abs(d) < 1) return JUMP_H * (1 - d * d);
+      }
+      return 0;
+    };
+
+    const place = (el: SVGGElement, x: number) => {
+      const y = data.ground - jumpAt(x);
+      el.setAttribute(
+        "transform",
+        `translate(${x - 6 * SCALE} ${y - 16 * SCALE}) scale(${SCALE})`,
+      );
+      return y;
+    };
+
+    // posisi pria (koordinat dunia) berdasarkan progres scroll
+    const positionAt = (progress: number) => {
+      const per = 1 / N;
+      const idx = Math.min(Math.floor(progress / per), N - 1);
+      const local = (progress - idx * per) / per;
+      const t = Math.min(local / WALK, 1);
+      const from = idx === 0 ? data.startX : data.cpX[idx - 1];
+      const x = from + (data.cpX[idx] - from) * t;
+      const reached = t >= 1 ? idx : idx - 1;
+      return { x, reached, walking: t > 0 && t < 1 };
+    };
+
+    /* ---------- Dialog dengan efek mesin ketik ---------- */
+    let shownIndex = -2;
+    let typer = 0;
+    const typeText = (text: string) => {
+      window.clearInterval(typer);
+      nextEl.classList.remove("is-on");
+      if (reduceMotion) {
+        textEl.textContent = text;
+        nextEl.classList.add("is-on");
+        return;
+      }
+      let i = 0;
+      textEl.textContent = "";
+      typer = window.setInterval(() => {
+        i += 2;
+        textEl.textContent = text.slice(0, i);
+        if (i >= text.length) {
+          window.clearInterval(typer);
+          nextEl.classList.add("is-on");
+        }
+      }, 28);
+    };
+
+    const showDialog = (index: number) => {
+      if (index === shownIndex) return;
+      shownIndex = index;
+      if (index < 0) {
+        label.textContent = "Mulai";
+        nameEl.textContent = "Cerita Kami";
+        avatar.src = data.boyPhoto;
+        typeText(data.lead);
+        return;
+      }
+      const m = data.milestones[index];
+      label.textContent = `Kisah ${index + 1} · ${m.date}`;
+      nameEl.textContent = m.title;
+      avatar.src = index === 0 ? data.boyPhoto : data.couplePhoto;
+      typeText(m.text);
+    };
+
+    /* ---------- TV menyala saat pertama kali terlihat ---------- */
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          tv.classList.add("is-on");
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(tv);
+
+    /* ---------- Loop utama saat scroll ---------- */
+    let lastX = -1;
+    let walkTimer = 0;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const rect = track.getBoundingClientRect();
+      const stickyTop = parseFloat(getComputedStyle(tv).top) || 0;
+      const distance = track.offsetHeight - tv.offsetHeight;
+      if (distance <= 0) return;
+      const progress = Math.min(
+        Math.max((stickyTop - rect.top) / distance, 0),
+        0.9999,
+      );
+
+      const { x, reached, walking } = positionAt(progress);
+      const together = reached >= 0;
+
+      // kamera mengikuti pria; dunia & lapisan latar bergeser (parallax)
+      const cam = Math.min(
+        Math.max(x - data.viewW * CAMERA, 0),
+        data.worldW - data.viewW,
+      );
+      layers.forEach((l) =>
+        l.setAttribute(
+          "transform",
+          `translate(${-cam * Number(l.dataset.layer)} 0)`,
+        ),
+      );
+
+      // pria selalu menghadap ke kanan (arah perjalanan)
+      const boyY = place(boy, x);
+      boy.classList.toggle("is-moving", walking);
+
+      // wanita: menunggu di checkpoint 1 (menghadap pria), lalu berjalan di sampingnya
+      const girlX = together ? x + PARTNER : data.cpX[0] + PARTNER;
+      place(girl, girlX);
+      girl.classList.toggle("is-left", !together || !walking); // menunggu / berhenti: menoleh ke pria
+      girl.classList.toggle("is-moving", together && walking);
+
+      // hati di antara mereka saat berhenti bersama
+      love.classList.toggle("is-on", together && !walking);
+      love.setAttribute(
+        "transform",
+        `translate(${x + PARTNER / 2 - 7} ${boyY - 16 * SCALE - 16})`,
+      );
+
+      flags.forEach((f, i) => f.classList.toggle("is-reached", i <= reached));
+      hearts.forEach((h, i) => h.classList.toggle("is-on", i <= reached));
+      chapter.textContent = `${Math.max(reached + 1, 0)}/${N}`;
+
+      showDialog(reached);
+      const showHint =
+        progress <= 0.02 || (!walking && reached >= 0 && reached < N - 1);
+      hint.classList.toggle("is-hidden", !showHint);
+      hint.textContent =
+        reached < 0
+          ? "▼ Scroll untuk memulai cerita"
+          : "▼ Scroll untuk melanjutkan";
+
+      if (Math.abs(x - lastX) > 0.05) {
+        track.classList.add("is-walking");
+        window.clearTimeout(walkTimer);
+        walkTimer = window.setTimeout(
+          () => track.classList.remove("is-walking"),
+          160,
+        );
+      }
+      lastX = x;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+  }
+</script>

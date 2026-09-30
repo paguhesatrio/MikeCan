@@ -1,0 +1,87 @@
+---
+import { wedding, mapsUrl } from '../data/wedding';
+import SectionHead from './ui/SectionHead.astro';
+import PhotoSection from './ui/PhotoSection.astro';
+---
+
+<PhotoSection id="acara" photo={wedding.photos.events} shade="strong" labelledby="acara-title">
+  <div class="container">
+    <SectionHead id="acara-title" title="Rangkaian Acara" subtitle="Dengan sukacita kami mengundang Anda untuk hadir dan merayakan bersama kami pada:" />
+
+    <div class="events">
+      {
+        wedding.events.map((ev) => (
+          <article class="event" id={ev.id} data-reveal aria-labelledby={`${ev.id}-title`}>
+            <h3 class="event__title" id={`${ev.id}-title`}>{ev.title}</h3>
+            <p class="event__day">{ev.dateLabel.split(', ')[0]}</p>
+            <p class="event__date">{ev.dateLabel.split(', ')[1]}</p>
+            <p class="event__time">{ev.time}</p>
+            <p class="event__venue">{ev.venue}</p>
+            <p class="event__address">{ev.address}</p>
+            <a class="btn btn--primary event__btn" href={mapsUrl(ev.mapsQuery)} target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
+              </svg>
+              Lihat Lokasi
+            </a>
+            <span class="double-rule event__rule" aria-hidden="true"></span>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</PhotoSection>
+
+<style>
+  .events {
+    display: grid;
+    gap: 2.25rem;
+  }
+  .event {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    scroll-margin-top: 1.5rem;
+  }
+  .event__title {
+    font-size: clamp(2rem, 9.5cqi, 2.5rem);
+  }
+  .event__day {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+  .event__date {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 7.5cqi, 1.9rem);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+  .event__time {
+    margin-top: 0.3rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .event__venue {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+  }
+  .event__address {
+    margin-top: 0.2rem;
+    max-width: 20rem;
+    color: var(--text-soft);
+  }
+  .event__btn {
+    margin-top: 1.1rem;
+  }
+  .event__rule {
+    margin-top: 2.25rem;
+  }
+  .event:last-child .event__rule {
+    display: none;
+  }
+</style>

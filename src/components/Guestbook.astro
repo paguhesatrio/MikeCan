@@ -1,0 +1,506 @@
+---
+import { wedding } from '../data/wedding';
+import { isSupabaseConfigured } from '../lib/supabase';
+import SectionHead from './ui/SectionHead.astro';
+import PhotoSection from './ui/PhotoSection.astro';
+---
+
+<PhotoSection id="ucapan" photo={wedding.photos.wishes} shade="strong" labelledby="ucapan-title">
+  <div class="container">
+    <SectionHead id="ucapan-title" title="Ucapan & Doa" subtitle={`Tulis ucapan dan doa terbaik Anda untuk ${wedding.couple}.`} />
+
+    <form class="glass wish-form" data-wish-form novalidate data-reveal>
+      <div class="field">
+        <label class="field__label" for="wish-name">Nama</label>
+        <input
+          class="input"
+          id="wish-name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          maxlength="80"
+          placeholder="Nama Anda"
+          required
+          aria-describedby="wish-name-error"
+        />
+        <p class="field__error" id="wish-name-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <div class="wish-form__label-row">
+          <label class="field__label" for="wish-message">Ucapan atau doa</label>
+          <span class="field__hint" data-counter aria-live="off">0/500</span>
+        </div>
+        <textarea
+          class="input"
+          id="wish-message"
+          name="message"
+          maxlength="500"
+          rows="4"
+          placeholder="Tuhan memberkati pernikahan kalian…"
+          required
+          aria-describedby="wish-message-error"></textarea>
+        <p class="field__error" id="wish-message-error" hidden></p>
+      </div>
+
+      <div class="hp-field" aria-hidden="true">
+        <label>Jangan diisi <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+
+      <p class="form-status" data-status role="status" aria-live="polite" hidden></p>
+
+      <button type="submit" class="btn btn--primary btn--block">Kirim Ucapan</button>
+    </form>
+
+    <div class="wishes" data-reveal>
+      <p class="wishes__count" data-wish-count aria-live="polite"></p>
+
+      <!-- Kotak ucapan: tampil 3 terbaru, sisanya dimuat saat di-scroll -->
+      <div class="wishes__box" data-wish-box tabindex="0" aria-label="Daftar ucapan dan doa, gulir untuk melihat lainnya">
+        <ol class="wishes__list" data-wish-list></ol>
+
+        <div class="wishes__more" data-wish-more hidden>
+          <span class="wishes__spinner" data-wish-spinner hidden aria-hidden="true"></span>
+          <button type="button" class="wishes__more-btn" data-wish-more-btn>Muat ucapan lainnya</button>
+        </div>
+        <p class="wishes__end" data-wish-end hidden>Semua ucapan sudah ditampilkan</p>
+      </div>
+
+      <p class="wishes__empty" data-wish-empty hidden>
+        {
+          isSupabaseConfigured
+            ? `Belum ada ucapan. Jadilah yang pertama mendoakan ${wedding.couple}.`
+            : 'Buku ucapan belum terhubung ke database.'
+        }
+      </p>
+      <p class="wishes__loading" data-wish-loading hidden>Memuat ucapan…</p>
+      <div class="wishes__error" data-wish-error hidden>
+        <p>Ucapan belum dapat dimuat.</p>
+        <button type="button" class="btn btn--ghost" data-wish-retry>Muat ulang</button>
+      </div>
+    </div>
+  </div>
+</PhotoSection>
+
+<style>
+  .wish-form {
+    display: grid;
+    gap: 1.35rem;
+  }
+  .wish-form__label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .wish-form__label-row .field__hint {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Nama tamu dari undangan: terkunci, tidak bisa diedit */
+  .input[readonly] {
+    opacity: 0.75;
+    cursor: default;
+  }
+  .input[readonly]:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .wishes {
+    margin-top: 2.5rem;
+  }
+  .wishes__count {
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  /* Kotak bergulir: tingginya kira-kira pas untuk 3 ucapan */
+  .wishes__box {
+    max-height: 27rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.5rem;
+    border-radius: var(--radius-card);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgb(255 255 255 / 0.12);
+  }
+  .wishes__box:empty,
+  .wishes__box:has(.wishes__list:empty) {
+    display: none;
+  }
+  .wishes__box:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+  /* Scrollbar untuk Chrome, Edge, Safari */
+  .wishes__box::-webkit-scrollbar {
+    width: 6px;
+  }
+  .wishes__box::-webkit-scrollbar-track {
+    background: rgb(255 255 255 / 0.12);
+    border-radius: 999px;
+  }
+  .wishes__box::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  /* Bayangan pudar di bawah sebagai tanda masih ada ucapan di bawahnya */
+  .wishes__box.has-more-below {
+    -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent);
+    mask-image: linear-gradient(to bottom, #000 82%, transparent);
+  }
+
+  .wishes__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .wishes__more {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 0 0.5rem;
+  }
+  .wishes__more-btn {
+    min-height: 2.5rem;
+    padding: 0.35rem 1rem;
+    border: 1px solid rgb(255 255 255 / 0.4);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .wishes__more-btn:hover {
+    color: var(--white);
+    border-color: var(--white);
+  }
+  .wishes__spinner {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    border: 2px solid rgb(255 255 255 / 0.25);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .wishes__end {
+    padding: 1rem 0 0.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-faint);
+  }
+
+  .wishes__empty,
+  .wishes__loading,
+  .wishes__error {
+    text-align: center;
+    color: var(--text-soft);
+    padding: 2rem 1rem;
+  }
+  .wishes__error {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+  }
+</style>
+
+<style is:global>
+  /* Dibuat lewat JavaScript, maka didefinisikan global */
+  .wish {
+    padding: 1.1rem 1.2rem;
+    border-radius: var(--radius-card);
+    background: var(--glass);
+    border: 1px solid var(--glass-line);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .wish__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.75rem;
+  }
+  .wish__name {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .wish__time {
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+  .wish__text {
+    margin-top: 0.35rem;
+    color: var(--text);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .wish--new {
+    animation: wishIn 0.6s var(--ease) both;
+  }
+  @keyframes wishIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wish--new {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import {
+    fetchMessagesPage,
+    submitMessage,
+    isSupabaseConfigured,
+    type GuestMessage,
+  } from '../lib/supabase';
+  import { cleanText, cleanMultiline, setStatus, timeAgo } from '../lib/ui';
+
+  const FIRST_PAGE = 3; // jumlah ucapan yang tampil pertama kali
+  const NEXT_PAGE = 5; // jumlah ucapan per muatan berikutnya
+
+  const form = document.querySelector<HTMLFormElement>('[data-wish-form]');
+  const list = document.querySelector<HTMLOListElement>('[data-wish-list]');
+
+  if (form && list) {
+    const status = form.querySelector<HTMLElement>('[data-status]');
+    const nameInput = form.querySelector<HTMLInputElement>('#wish-name')!;
+    const msgInput = form.querySelector<HTMLTextAreaElement>('#wish-message')!;
+    const nameError = form.querySelector<HTMLElement>('#wish-name-error')!;
+    const msgError = form.querySelector<HTMLElement>('#wish-message-error')!;
+    const counter = form.querySelector<HTMLElement>('[data-counter]')!;
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+    const box = document.querySelector<HTMLElement>('[data-wish-box]')!;
+    const moreEl = document.querySelector<HTMLElement>('[data-wish-more]')!;
+    const moreBtn = document.querySelector<HTMLButtonElement>('[data-wish-more-btn]')!;
+    const spinner = document.querySelector<HTMLElement>('[data-wish-spinner]')!;
+    const endEl = document.querySelector<HTMLElement>('[data-wish-end]')!;
+    const countEl = document.querySelector<HTMLElement>('[data-wish-count]')!;
+    const emptyEl = document.querySelector<HTMLElement>('[data-wish-empty]')!;
+    const loadingEl = document.querySelector<HTMLElement>('[data-wish-loading]')!;
+    const errorEl = document.querySelector<HTMLElement>('[data-wish-error]')!;
+
+    let total = 0; // jumlah seluruh ucapan di database
+    let shown = 0; // jumlah ucapan yang sudah tampil
+    let oldestId: number | undefined; // id ucapan paling lama yang sudah dimuat
+    let hasMore = false;
+    let busy = false;
+
+    // Nama tamu dari link undangan (?to=Nama). Jika ada, kunci agar tidak bisa diedit.
+    const guest = (new URLSearchParams(location.search).get('to') ?? '').trim().slice(0, 80);
+    if (guest) {
+      nameInput.value = guest;
+      nameInput.readOnly = true;
+      nameInput.tabIndex = -1;
+      nameInput.removeAttribute('autocomplete');
+    }
+
+    const renderCount = () => {
+      countEl.textContent = total ? `${total} ucapan dan doa` : '';
+      emptyEl.hidden = total > 0 || shown > 0;
+    };
+
+    const renderFooter = () => {
+      moreEl.hidden = !hasMore;
+      moreBtn.hidden = busy;
+      spinner.hidden = !busy;
+      endEl.hidden = hasMore || shown <= FIRST_PAGE;
+      updateFade();
+    };
+
+    // bayangan pudar muncul bila masih ada isi di bawah
+    const updateFade = () => {
+      const below = box.scrollHeight - box.scrollTop - box.clientHeight > 8;
+      box.classList.toggle('has-more-below', below);
+    };
+
+    const renderWish = (m: Pick<GuestMessage, 'name' | 'message' | 'created_at'>, isNew = false) => {
+      const li = document.createElement('li');
+      li.className = isNew ? 'wish wish--new' : 'wish';
+
+      const meta = document.createElement('div');
+      meta.className = 'wish__meta';
+      const name = document.createElement('p');
+      name.className = 'wish__name';
+      name.textContent = m.name;
+      const time = document.createElement('time');
+      time.className = 'wish__time';
+      time.dateTime = m.created_at;
+      time.textContent = timeAgo(m.created_at);
+      meta.append(name, time);
+
+      const text = document.createElement('p');
+      text.className = 'wish__text';
+      text.textContent = m.message;
+
+      li.append(meta, text);
+      return li;
+    };
+
+    /* ---------- Halaman pertama: 3 ucapan terbaru + jumlah total ---------- */
+    const loadFirst = async () => {
+      if (!isSupabaseConfigured) {
+        renderCount();
+        return;
+      }
+      errorEl.hidden = true;
+      loadingEl.hidden = false;
+      busy = true;
+      try {
+        const { rows, total: count } = await fetchMessagesPage({ limit: FIRST_PAGE, withCount: true });
+        list.replaceChildren(...rows.map((r) => renderWish(r)));
+        shown = rows.length;
+        total = count ?? rows.length;
+        oldestId = rows.at(-1)?.id;
+        hasMore = shown < total;
+        renderCount();
+      } catch {
+        errorEl.hidden = false;
+      } finally {
+        busy = false;
+        loadingEl.hidden = true;
+        renderFooter();
+      }
+    };
+
+    /* ---------- Halaman berikutnya: dimuat saat kotak di-scroll ke bawah ---------- */
+    const loadMore = async () => {
+      if (busy || !hasMore || !oldestId) return;
+      busy = true;
+      renderFooter();
+      try {
+        const { rows } = await fetchMessagesPage({ limit: NEXT_PAGE, beforeId: oldestId });
+        rows.forEach((r) => list.append(renderWish(r)));
+        shown += rows.length;
+        oldestId = rows.at(-1)?.id ?? oldestId;
+        hasMore = rows.length === NEXT_PAGE && shown < total;
+      } catch {
+        // gagal: biarkan tombol "Muat ucapan lainnya" tampil untuk dicoba lagi
+      } finally {
+        busy = false;
+        renderFooter();
+      }
+    };
+
+    box.addEventListener(
+      'scroll',
+      () => {
+        updateFade();
+        const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+        if (nearBottom) loadMore();
+      },
+      { passive: true },
+    );
+    moreBtn.addEventListener('click', loadMore);
+
+    // Muat halaman pertama saat bagian ini mendekati layar, agar halaman awal tetap ringan.
+    const section = document.getElementById('ucapan')!;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          loadFirst();
+        }
+      },
+      { rootMargin: '600px 0px' },
+    );
+    io.observe(section);
+
+    document.querySelector('[data-wish-retry]')?.addEventListener('click', loadFirst);
+
+    msgInput.addEventListener('input', () => {
+      counter.textContent = `${msgInput.value.length}/500`;
+      msgError.hidden = true;
+      msgInput.setAttribute('aria-invalid', 'false');
+    });
+    nameInput.addEventListener('input', () => {
+      nameError.hidden = true;
+      nameInput.setAttribute('aria-invalid', 'false');
+    });
+
+    const fail = (input: HTMLElement, el: HTMLElement, msg: string) => {
+      el.textContent = msg;
+      el.hidden = false;
+      input.setAttribute('aria-invalid', 'true');
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(status, '');
+
+      const data = new FormData(form);
+      if (cleanText(data.get('website'))) return;
+
+      // Pakai nama dari undangan jika tersedia, agar tidak bisa diakali lewat DevTools.
+      const name = guest ? cleanText(guest) : cleanText(data.get('name'));
+      const message = cleanMultiline(data.get('message'));
+      let firstInvalid: HTMLElement | null = null;
+
+      if (name.length < 2) {
+        fail(nameInput, nameError, 'Mohon isi nama Anda (minimal 2 huruf).');
+        if (!nameInput.readOnly) firstInvalid = nameInput;
+      }
+      if (message.length < 3) {
+        fail(msgInput, msgError, 'Mohon tuliskan ucapan atau doa Anda.');
+        firstInvalid ??= msgInput;
+      }
+      if (firstInvalid) {
+        firstInvalid.focus();
+        return;
+      }
+
+      if (!isSupabaseConfigured) {
+        setStatus(status, 'Buku ucapan belum terhubung ke database.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      submitBtn.textContent = 'Mengirim…';
+
+      try {
+        await submitMessage({ name, message });
+        // Ucapan baru langsung tampil paling atas tanpa memuat ulang dari database
+        list.prepend(renderWish({ name, message, created_at: new Date().toISOString() }, true));
+        box.scrollTop = 0;
+        total += 1;
+        shown += 1;
+        renderCount();
+        renderFooter();
+        msgInput.value = '';
+        counter.textContent = '0/500';
+        setStatus(status, 'Terima kasih! Ucapan dan doa Anda sudah terkirim.', 'success');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '';
+        setStatus(
+          status,
+          msg.startsWith('Koneksi') || msg.startsWith('Tidak dapat')
+            ? msg
+            : 'Ucapan belum terkirim karena gangguan pada server. Silakan coba lagi beberapa saat lagi.',
+          'error',
+        );
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
+        submitBtn.textContent = 'Kirim Ucapan';
+      }
+    });
+  }
+</script>

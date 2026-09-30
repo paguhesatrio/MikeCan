@@ -1,0 +1,236 @@
+---
+import { wedding, calendarUrl } from "../data/wedding";
+import PhotoSection from "./ui/PhotoSection.astro";
+const [first, second] = wedding.couple.split(" & ");
+---
+
+<PhotoSection
+  id="pembuka"
+  photo={wedding.photos.opening}
+  shade="soft"
+  align="start"
+  labelledby="pembuka-title"
+  focusable
+>
+  <div class="opening">
+    <div class="opening__top" data-reveal>
+      <p class="opening__lead">The Wedding Of</p>
+      <h2 class="opening__names" id="pembuka-title">
+        <span class="opening__line"
+          >{first} <span class="opening__amp">&amp;</span></span
+        >
+        <span class="opening__line">{second}</span>
+      </h2>
+
+      <div class="opening__bar">
+        <p class="opening__date">
+          <time datetime={wedding.dateISO}>{wedding.dateShort}</time>
+        </p>
+        <div
+          class="countdown"
+          data-countdown={wedding.dateISO}
+          role="timer"
+          aria-label="Hitung mundur menuju hari pernikahan"
+        >
+          <div class="countdown__cell">
+            <span data-unit="days">00</span><small>Hari</small>
+          </div>
+          <div class="countdown__cell">
+            <span data-unit="hours">00</span><small>Jam</small>
+          </div>
+          <div class="countdown__cell">
+            <span data-unit="minutes">00</span><small>Menit</small>
+          </div>
+          <div class="countdown__cell">
+            <span data-unit="seconds">00</span><small>Detik</small>
+          </div>
+        </div>
+        <p class="countdown__done" data-countdown-done hidden>Hari ini!</p>
+      </div>
+
+      <!-- <a class="btn btn--ghost opening__save" href={calendarUrl()} target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+          <path d="M3.5 10h17M8 3v4M16 3v4" />
+        </svg>
+        Simpan Tanggal
+      </a> -->
+    </div>
+
+    <div class="" aria-hidden="true">
+      <span></span>
+    </div>
+
+    <div class="opening__footer" data-reveal>
+      <p class="opening__message">“{wedding.hero.message}”</p>
+      <p class="opening__verse">{wedding.verse.reference}</p>
+    </div>
+  </div>
+</PhotoSection>
+
+<style>
+  .opening {
+    min-height: calc(100svh - 2 * var(--section-y));
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    text-align: center;
+    gap: 2rem;
+    padding-top: 0;
+  }
+
+  .opening__lead {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+  }
+  .opening__names {
+    margin-top: 0.2rem;
+    font-size: clamp(2.8rem, 13.5cqi, 3.7rem);
+    letter-spacing: -0.02em;
+  }
+  .opening__line {
+    display: block;
+  }
+  .opening__amp {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .opening__bar {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    border-top: 1px solid rgb(255 255 255 / 0.7);
+    border-bottom: 1px solid rgb(255 255 255 / 0.7);
+  }
+  .opening__date {
+    padding: 0.9rem 0.5rem;
+    font-size: clamp(1.05rem, 5cqi, 1.25rem);
+    letter-spacing: 0.12em;
+    border-right: 1px solid rgb(255 255 255 / 0.7);
+  }
+
+  .countdown {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(2.9rem, auto));
+  }
+  .countdown__cell {
+    display: grid;
+    padding: 0.55rem 0.3rem;
+    line-height: 1.15;
+  }
+  .countdown__cell span {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+  .countdown__cell small {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+  }
+  .countdown__done {
+    padding: 0 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+  }
+
+  .opening__save {
+    margin-top: 1.5rem;
+  }
+
+  /* Indikator scroll seperti referensi */
+  .opening__scroll {
+    align-self: center;
+    width: 1.9rem;
+    height: 3.1rem;
+    border: 2px solid rgb(255 255 255 / 0.85);
+    border-radius: 999px;
+    display: grid;
+    justify-items: center;
+    padding-top: 0.45rem;
+  }
+  .opening__scroll span {
+    width: 4px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--white);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .opening__scroll span {
+      animation: scrollDot 1.8s var(--ease) infinite;
+    }
+  }
+  @keyframes scrollDot {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    70% {
+      transform: translateY(14px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+  }
+
+  .opening__message {
+    max-width: 22rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    text-shadow: 0 1px 12px rgb(0 0 0 / 0.4);
+  }
+
+  .opening__footer {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem; /* atur jarak antar paragraf di sini */
+  }
+
+  .opening__verse {
+    max-width: 22rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.14em;
+    line-height: 1.6;
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  const countdown = document.querySelector<HTMLElement>("[data-countdown]");
+  if (countdown) {
+    const target = new Date(countdown.dataset.countdown!).getTime();
+    const get = (u: string) =>
+      countdown.querySelector<HTMLElement>(`[data-unit="${u}"]`)!;
+    const cells = [get("days"), get("hours"), get("minutes"), get("seconds")];
+    const pad = (n: number) => String(n).padStart(2, "0");
+    let timer = 0;
+
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) {
+        countdown.hidden = true;
+        const done = document.querySelector<HTMLElement>(
+          "[data-countdown-done]",
+        );
+        if (done) done.hidden = false;
+        window.clearInterval(timer);
+        return;
+      }
+      const values = [
+        Math.floor(diff / 86400000),
+        Math.floor((diff / 3600000) % 24),
+        Math.floor((diff / 60000) % 60),
+        Math.floor((diff / 1000) % 60),
+      ];
+      values.forEach((v, i) => (cells[i].textContent = pad(v)));
+    };
+    tick();
+    timer = window.setInterval(tick, 1000);
+  }
+</script>

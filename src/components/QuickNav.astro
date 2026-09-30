@@ -1,0 +1,124 @@
+---
+const links = [
+  {
+    href: "#mempelai",
+    label: "Mempelai",
+    icon: "M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z",
+  },
+  { href: "#cerita", label: "Cerita", icon: "M5 12.5l4.5 4.5L19 7.5" },
+  {
+    href: "#acara",
+    label: "Acara",
+    icon: "M4.5 6.5h15v13h-15zM4.5 10.5h15M8.5 4v4M15.5 4v4",
+  },
+  {
+    href: "#kado",
+    label: "Kado",
+    icon: "M4.5 10h15v10h-15zM3.5 7h17v3h-17zM12 7v13M12 7c-1.5-3.5-5-3.5-5-1.3S10 7 12 7Zm0 0c1.5-3.5 5-3.5 5-1.3S14 7 12 7Z",
+  },
+  { href: "#ucapan", label: "Ucapan", icon: "M5 5.5h14v10H10l-4 3.5v-3.5H5z" },
+];
+---
+
+<nav class="quick-nav" aria-label="Navigasi undangan">
+  <ul>
+    {
+      links.map((l) => (
+        <li>
+          <a href={l.href} data-nav-link>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d={l.icon} />
+            </svg>
+            <span>{l.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .quick-nav {
+    position: fixed;
+    left: var(--nav-center, 50%);
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 50;
+    width: min(calc(100% - 1.5rem), 26rem, calc(var(--panel-w) - 1.5rem));
+    background: rgb(18 17 16 / 0.62);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 16px;
+  }
+  .quick-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .quick-nav a {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    min-height: 3.1rem;
+    padding: 0.4rem 0.15rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    color: var(--text-soft);
+    text-decoration: none;
+    transition:
+      color 0.2s var(--ease),
+      background-color 0.2s var(--ease);
+  }
+  .quick-nav svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .quick-nav a:hover {
+    color: var(--white);
+  }
+  .quick-nav a[aria-current="true"] {
+    color: var(--ink);
+    background: var(--white);
+  }
+</style>
+
+<script>
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("[data-nav-link]"),
+  );
+  const sections = links
+    .map((l) => document.querySelector<HTMLElement>(l.getAttribute("href")!))
+    .filter((s): s is HTMLElement => Boolean(s));
+
+  const setActive = (id: string) =>
+    links.forEach((l) =>
+      l.setAttribute(
+        "aria-current",
+        String(l.getAttribute("href") === `#${id}`),
+      ),
+    );
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) setActive(e.target.id);
+      });
+    },
+    { rootMargin: "-45% 0px -50% 0px" },
+  );
+  sections.forEach((s) => io.observe(s));
+</script>

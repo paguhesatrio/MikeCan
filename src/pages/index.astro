@@ -1,0 +1,76 @@
+---
+import Layout from "../layouts/Layout.astro";
+import IntroVideo from "../components/IntroVideo.astro";
+import SidePhoto from "../components/SidePhoto.astro";
+import Cover from "../components/Cover.astro";
+import Opening from "../components/Opening.astro";
+import Intro from "../components/Intro.astro";
+import Couple from "../components/Couple.astro";
+import Story from "../components/Story.astro";
+import Events from "../components/Events.astro";
+import Location from "../components/Location.astro";
+import Rsvp from "../components/Rsvp.astro";
+import Gift from "../components/Gift.astro";
+import Guestbook from "../components/Guestbook.astro";
+import Footer from "../components/Footer.astro";
+import QuickNav from "../components/QuickNav.astro";
+import MusicPlayer from "../components/MusicPlayer.astro";
+---
+
+<Layout>
+  <!-- Desktop: foto statis di satu sisi -->
+  <SidePhoto />
+
+  <!-- Video pembuka: tampil di atas semuanya, lalu hilang ke cover -->
+  <!-- <IntroVideo src="/video/video.gif" /> -->
+
+  <!-- Kolom undangan: selebar HP di desktop, layar penuh di mobile -->
+  <div class="panel">
+    <!-- GIF -->
+    <Cover
+      introSrc="/video/video.gif"
+      introStill="/images/tes.jpg"
+      gifDuration={5000}
+    />
+
+    <main class="invitation-body">
+      <Opening />
+      <!-- <Intro /> -->
+      <Couple />
+      <Story />
+      <Events />
+      <Location />
+      <!-- <Rsvp /> -->
+      <Gift />
+      <Guestbook />
+    </main>
+
+    <div class="invitation-body">
+      <Footer />
+    </div>
+  </div>
+
+  <QuickNav />
+  <MusicPlayer />
+</Layout>
+
+<script>
+  // Animasi muncul yang halus saat bagian masuk layar
+  const items = document.querySelectorAll<HTMLElement>("[data-reveal]");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+    items.forEach((el) => io.observe(el));
+  } else {
+    items.forEach((el) => el.classList.add("is-visible"));
+  }
+</script>

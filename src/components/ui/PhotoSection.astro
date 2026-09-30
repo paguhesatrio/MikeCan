@@ -1,0 +1,105 @@
+---
+/**
+ * Bagian berlatar foto prewed penuh.
+ * Foto "menempel" di layar (sticky) sementara isi bagian mengalir di atasnya.
+ *
+ * <PhotoSection id="acara" photo="/images/prewed-1.jpg" shade="strong" align="center">
+ *   ...isi...
+ * </PhotoSection>
+ */
+interface Props {
+  id: string;
+  photo: string;
+  labelledby?: string;
+  label?: string;
+  /** seberapa gelap lapisan di atas foto */
+  shade?: 'soft' | 'medium' | 'strong';
+  /** posisi isi bila isi lebih pendek dari layar */
+  align?: 'start' | 'center' | 'end';
+  focusable?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  photo,
+  labelledby,
+  label,
+  shade = 'medium',
+  align = 'center',
+  focusable = false,
+  class: className = '',
+} = Astro.props;
+---
+
+<section
+  id={id}
+  class:list={['ps', `ps--${shade}`, `ps--${align}`, className]}
+  aria-labelledby={labelledby}
+  aria-label={label}
+  tabindex={focusable ? -1 : undefined}
+>
+  <div class="ps__bg" aria-hidden="true">
+    <div class="ps__pin">
+      <img src={photo} alt="" width="1080" height="1920" loading="lazy" decoding="async" />
+      <div class="ps__shade"></div>
+    </div>
+  </div>
+  <div class="ps__content">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .ps {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: grid;
+    outline: none;
+  }
+  .ps--start { align-items: start; }
+  .ps--center { align-items: center; }
+  .ps--end { align-items: end; }
+
+  .ps__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: clip;
+    background: var(--night);
+  }
+
+  .ps__pin {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+  }
+
+  .ps__pin img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ps__shade {
+    position: absolute;
+    inset: 0;
+  }
+  .ps--soft .ps__shade {
+    background:
+      linear-gradient(to bottom, rgb(12 11 10 / 0.55), rgb(12 11 10 / 0.15) 35%, rgb(12 11 10 / 0.2) 60%, rgb(12 11 10 / 0.7));
+  }
+  .ps--medium .ps__shade {
+    background:
+      linear-gradient(to bottom, rgb(12 11 10 / 0.62), rgb(12 11 10 / 0.38) 40%, rgb(12 11 10 / 0.45) 65%, rgb(12 11 10 / 0.78));
+  }
+  .ps--strong .ps__shade {
+    background: rgb(12 11 10 / 0.62);
+  }
+
+  .ps__content {
+    position: relative;
+    padding: var(--section-y) var(--gutter);
+  }
+</style>

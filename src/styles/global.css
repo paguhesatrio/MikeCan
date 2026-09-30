@@ -1,0 +1,433 @@
+/* =========================================================
+   Mikha & Candra — sinematik & santai
+   Setiap bagian berlatar foto prewed penuh dengan lapisan gelap,
+   teks putih, panel kaca buram untuk form & kartu.
+   ========================================================= */
+
+:root {
+  color-scheme: light only;
+
+  /* warna di atas foto */
+  --white: #ffffff;
+  --text: #f4f1ec;                    /* teks utama di atas foto */
+  --text-soft: rgb(244 241 236 / 0.78);
+  --text-faint: rgb(244 241 236 / 0.55);
+  --glass: rgb(18 17 16 / 0.42);      /* panel kaca */
+  --glass-strong: rgb(18 17 16 / 0.62);
+  --glass-line: rgb(255 255 255 / 0.18);
+  --accent: #e8c07a;                  /* emas hangat untuk aksen kecil */
+  --night: #151412;                   /* warna dasar sebelum foto termuat */
+
+  /* warna untuk kartu terang (perangko rekening, polaroid) */
+  --paper: #fffdf8;
+  --ink: #2a2723;
+  --muted: #6f6a63;
+  --line: #e6dfd4;
+
+  --success: #9fe0b8;
+  --error: #ffb4ad;
+
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 12px;
+  --radius-card: 18px;
+
+  --col: 36rem;
+  --gutter: clamp(1.25rem, 6cqi, 2.25rem);
+  --section-y: clamp(5rem, 18cqi, 7rem);
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Lebar kolom undangan di desktop */
+  --panel-w: clamp(400px, 32vw, 480px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  background: var(--night);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--night);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--white);
+  margin: 0;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  background: var(--white);
+  color: var(--ink);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ---------- Panel undangan + foto samping ---------- */
+
+.panel {
+  container: panel / inline-size;
+  position: relative;
+  background: var(--night);
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+@media (min-width: 64rem) {
+  body {
+    --nav-center: calc(100% - var(--panel-w) / 2);
+    --panel-start: calc(100% - var(--panel-w));
+  }
+  body[data-panel='left'] {
+    --nav-center: calc(var(--panel-w) / 2);
+    --panel-start: 0px;
+  }
+  .panel {
+    width: var(--panel-w);
+    margin-left: auto;
+    box-shadow: 0 0 60px rgb(0 0 0 / 0.5);
+  }
+  body[data-panel='left'] .panel {
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+
+/* ---------- Tata letak ---------- */
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: var(--col);
+  margin-inline: auto;
+}
+
+/* Judul bagian: serif tipis besar + garis ganda seperti referensi */
+.section-head {
+  text-align: center;
+  max-width: 30rem;
+  margin: 0 auto clamp(2rem, 8cqi, 2.75rem);
+}
+.section-head h2 {
+  font-size: clamp(2.3rem, 11cqi, 3rem);
+  letter-spacing: -0.01em;
+}
+.section-head p {
+  margin-top: 0.9rem;
+  color: var(--text-soft);
+}
+
+.double-rule {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-top: 1px solid rgb(255 255 255 / 0.7);
+  border-bottom: 1px solid rgb(255 255 255 / 0.7);
+}
+.double-rule--short {
+  width: 4.5rem;
+  margin: 0.9rem auto 0;
+}
+
+/* ---------- Tombol ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 3rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease),
+    transform 0.15s var(--ease);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+}
+
+/* Tombol utama: gelap transparan di atas foto */
+.btn--primary {
+  background: rgb(28 27 26 / 0.82);
+  border-color: rgb(255 255 255 / 0.14);
+  color: var(--white);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.btn--primary:hover {
+  background: rgb(10 10 10 / 0.92);
+  border-color: rgb(255 255 255 / 0.3);
+}
+
+/* Tombol sekunder: garis putih */
+.btn--ghost {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.55);
+  color: var(--white);
+}
+.btn--ghost:hover {
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* Tombol terang (dipakai di atas kartu kertas) */
+.btn--light {
+  background: var(--ink);
+  color: var(--white);
+}
+.btn--light:hover {
+  background: #000;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn[disabled],
+.btn[aria-busy='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ---------- Panel kaca ---------- */
+
+.glass {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-card);
+  padding: clamp(1.4rem, 6cqi, 2rem);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}
+
+/* ---------- Form ---------- */
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.field__hint {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+}
+
+.input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 0.08);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 1rem; /* 16px mencegah zoom otomatis di iOS */
+  transition:
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease);
+}
+.input::placeholder {
+  color: rgb(255 255 255 / 0.45);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--white);
+  background: rgb(255 255 255 / 0.14);
+}
+.input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+select.input option {
+  color: var(--ink);
+}
+textarea.input {
+  min-height: 7.5rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field__error {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--error);
+}
+
+.form-status {
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  line-height: 1.45;
+  background: rgb(255 255 255 / 0.1);
+}
+.form-status[data-tone='error'] {
+  color: var(--error);
+}
+.form-status[data-tone='success'] {
+  color: var(--success);
+}
+
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ---------- Muncul halus saat masuk layar ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(4px);
+    transition:
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease),
+      filter 0.9s var(--ease);
+  }
+  .js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  left: var(--nav-center, 50%);
+  bottom: calc(9.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  transform: translate(-50%, 1rem);
+  opacity: 0;
+  pointer-events: none;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  max-width: min(calc(100vw - 2rem), calc(var(--panel-w) - 2rem));
+  text-align: center;
+  transition:
+    opacity 0.25s var(--ease),
+    transform 0.3s var(--ease);
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- Gating konten sebelum undangan dibuka ---------- */
+
+.js:not(.is-open) .invitation-body,
+.js:not(.is-open) .quick-nav {
+  display: none;
+}

@@ -1,0 +1,421 @@
+---
+import { wedding } from "../data/wedding";
+
+interface Props {
+  /** Video (.mp4/.webm) atau GIF untuk latar sampul */
+  introSrc?: string;
+  /** Gambar yang tampil sebelum video siap. Sebaiknya gunakan frame terakhir video */
+  introPoster?: string;
+  /** Khusus GIF: gambar diam frame terakhir, dipakai sebagai frame beku */
+  introStill?: string;
+  /** Khusus GIF: lama tampil dalam ms, karena GIF tidak punya event "selesai" */
+  gifDuration?: number;
+}
+
+const {
+  introSrc = "/video/intro.mp4",
+  introPoster = wedding.photos.cover,
+  introStill,
+  gifDuration = 5000,
+} = Astro.props;
+
+const [first, second] = wedding.couple.split(" & ");
+const isGif = introSrc.toLowerCase().endsWith(".gif");
+---
+
+<header class="cover" id="beranda" data-duration={gifDuration} data-still={introStill}>
+  {
+    isGif ? (
+      <img
+        class="cover__img"
+        src={introSrc}
+        alt={wedding.photos.alt}
+        decoding="async"
+        data-intro-gif
+      />
+    ) : (
+      <video
+        class="cover__img"
+        src={introSrc}
+        poster={introPoster}
+        muted
+        playsinline
+        preload="auto"
+        aria-label={wedding.photos.alt}
+        data-intro-video
+      />
+    )
+  }
+  <div class="cover__shade" aria-hidden="true"></div>
+
+  <div class="cover__top">
+    <p class="cover__lead">The Wedding Of</p>
+    <h1 class="cover__names">
+      <span class="cover__line"
+        >{first} <span class="cover__amp" aria-label="dan">&amp;</span></span
+      >
+      <span class="cover__line">{second}</span>
+    </h1>
+    <p class="cover__date">
+      <time datetime={wedding.dateISO}>{wedding.dateLabel}</time>
+    </p>
+  </div>
+
+  <div class="cover__bottom">
+    <p class="cover__to">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+    <p class="cover__guest" data-guest-name>{wedding.hero.defaultGuest}</p>
+    <p class="cover__apology">
+      Mohon maaf apabila ada kesalahan penulisan nama dan gelar.
+    </p>
+
+    <button
+      type="button"
+      class="btn btn--primary cover__cta"
+      data-open-invitation
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path
+          d="M3.5 9.5 12 4l8.5 5.5v9a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z"
+        ></path>
+        <path d="m3.5 9.5 8.5 6 8.5-6"></path>
+      </svg>
+      Buka Undangan
+    </button>
+  </div>
+
+  <button type="button" class="cover__skip" data-intro-skip>Lewati</button>
+</header>
+
+<style>
+  .cover {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(3.5rem, 12svh, 6rem))
+      var(--gutter)
+      calc(env(safe-area-inset-bottom, 0px) + clamp(2.5rem, 8svh, 4rem));
+    text-align: center;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--night);
+  }
+
+  /* Berlaku untuk <video>, <img> GIF, dan <canvas> frame beku */
+  .cover__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+
+  /* Gradasi baru muncul saat video selesai, agar video tampil bersih */
+  .cover__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to bottom, rgb(12 11 10 / 0.55), transparent 36%),
+      linear-gradient(to top, rgb(12 11 10 / 0.78), transparent 48%);
+    opacity: 0;
+    transition: opacity 1s var(--ease);
+  }
+  .cover.is-ready .cover__shade {
+    opacity: 1;
+  }
+
+  .cover__top {
+    grid-row: 1;
+  }
+  .cover__bottom {
+    grid-row: 3;
+    display: grid;
+    justify-items: center;
+  }
+
+  /* Selama video diputar, teks disembunyikan (hanya jika JS aktif) */
+  :global(.js) .cover:not(.is-ready) .cover__top,
+  :global(.js) .cover:not(.is-ready) .cover__bottom {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .cover__lead {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--white);
+  }
+  .cover__names {
+    margin-top: 0.3rem;
+    font-size: clamp(2.9rem, 14cqi, 3.9rem);
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 24px rgb(0 0 0 / 0.3);
+  }
+  .cover__line {
+    display: block;
+  }
+  .cover__amp {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .cover__date {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+  .cover__to {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .cover__guest {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 7.5cqi, 2rem);
+    line-height: 1.2;
+    color: var(--white);
+    max-width: 22rem;
+    overflow-wrap: anywhere;
+  }
+  .cover__apology {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+  }
+  .cover__cta {
+    margin-top: 1.4rem;
+    min-width: 14rem;
+  }
+
+  .cover__skip {
+    position: absolute;
+    right: 1.25rem;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.5rem 1.1rem;
+    border: 1px solid rgb(255 255 255 / 0.6);
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.3);
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.4s ease;
+  }
+  .cover__skip:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+  .cover.is-ready .cover__skip {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Teks muncul berurutan setelah frame beku */
+  @media (prefers-reduced-motion: no-preference) {
+    .cover.is-ready .cover__top,
+    .cover.is-ready .cover__bottom {
+      animation: coverFade 1.1s var(--ease) both;
+    }
+    .cover.is-ready .cover__top {
+      animation-delay: 0.35s;
+    }
+    .cover.is-ready .cover__bottom {
+      animation-delay: 0.8s;
+    }
+  }
+  @keyframes coverFade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  :global(.js.cover-gone) .cover {
+    display: none;
+  }
+</style>
+
+<script>
+  // Nama tamu dari URL, contoh: ?to=Esa
+  const guest = (new URLSearchParams(window.location.search).get("to") ?? "")
+    .trim()
+    .slice(0, 80);
+  if (guest) {
+    const nameEl = document.querySelector<HTMLElement>("[data-guest-name]");
+    if (nameEl) nameEl.textContent = guest;
+  }
+
+  const root = document.documentElement;
+  const cover = document.getElementById("beranda");
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  /* ---------- 1. Intro: putar video/GIF, lalu bekukan frame terakhir ---------- */
+  let revealed = false;
+  let timer = 0;
+
+  const reveal = () => {
+    if (revealed || !cover) return;
+    revealed = true;
+    window.clearTimeout(timer);
+    cover.classList.add("is-ready");
+    cover.querySelector("[data-intro-skip]")?.remove();
+  };
+
+  const video = cover?.querySelector<HTMLVideoElement>("[data-intro-video]");
+  const gif = cover?.querySelector<HTMLImageElement>("[data-intro-gif]");
+
+  // Video: hentikan tepat di frame terakhir
+  const freezeVideo = () => {
+    if (!video) return reveal();
+    video.pause();
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      video.currentTime = Math.max(0, video.duration - 0.05);
+    }
+    reveal();
+  };
+
+  // GIF: ganti dengan gambar diam, atau salin frame saat ini ke <canvas>
+  const freezeGif = () => {
+    if (!gif) return reveal();
+    const still = cover?.dataset.still;
+    if (still) {
+      gif.src = still;
+    } else {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = gif.naturalWidth;
+        canvas.height = gif.naturalHeight;
+        canvas.getContext("2d")?.drawImage(gif, 0, 0);
+        canvas.className = gif.className;
+        canvas.setAttribute("aria-hidden", "true");
+        gif.replaceWith(canvas);
+      } catch {
+        /* jika gagal, GIF tetap berjalan */
+      }
+    }
+    reveal();
+  };
+
+  const freeze = () => (gif ? freezeGif() : freezeVideo());
+
+  cover
+    ?.querySelector("[data-intro-skip]")
+    ?.addEventListener("click", freeze);
+
+  // Pengaman: apa pun yang terjadi, teks pasti muncul
+  timer = window.setTimeout(freeze, 15000);
+
+  if (video) {
+    video.addEventListener("ended", reveal); // video otomatis diam di frame terakhir
+    video.addEventListener("error", reveal);
+
+    if (reduceMotion) {
+      // Tanpa animasi: langsung tampilkan frame terakhir
+      if (video.readyState >= 1) freezeVideo();
+      else video.addEventListener("loadedmetadata", freezeVideo, { once: true });
+    } else {
+      // Jika autoplay diblokir (mis. mode hemat daya iOS), langsung tampilkan teks di atas poster
+      video.play().catch(reveal);
+    }
+  } else if (gif) {
+    const duration = Number(cover?.dataset.duration) || 5000;
+    const start = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(freezeGif, reduceMotion ? 0 : duration);
+    };
+    if (gif.complete && gif.naturalWidth > 0) start();
+    else {
+      gif.addEventListener("load", start, { once: true });
+      gif.addEventListener("error", reveal, { once: true });
+    }
+  } else {
+    reveal();
+  }
+
+  /* ---------- 2. Buka undangan (kode lama Anda) ---------- */
+  const DURATION = 1000;
+
+  const ease = (t: number) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const smoothScrollTo = (top: number, done: () => void) => {
+    const start = window.scrollY;
+    const distance = top - start;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const p = Math.min((now - t0) / DURATION, 1);
+      window.scrollTo({ top: start + distance * ease(p), behavior: "instant" });
+      if (p < 1) requestAnimationFrame(step);
+      else done();
+    };
+    requestAnimationFrame(step);
+  };
+
+  const removeCover = () => {
+    if (!cover) return;
+    const offset = window.scrollY - cover.offsetHeight;
+    video?.pause();
+    root.classList.add("cover-gone");
+    window.scrollTo({ top: Math.max(0, offset), behavior: "instant" });
+  };
+
+  const openInvitation = () => {
+    if (root.classList.contains("is-open")) return;
+    const target = document.getElementById("pembuka");
+
+    root.classList.add("is-open");
+    if (!target) return;
+
+    const finish = () => {
+      removeCover();
+      target.focus({ preventScroll: true });
+    };
+    if (reduceMotion) {
+      window.scrollTo({ top: target.offsetTop, behavior: "instant" });
+      finish();
+    } else {
+      smoothScrollTo(
+        target.getBoundingClientRect().top + window.scrollY,
+        finish,
+      );
+    }
+  };
+
+  document
+    .querySelectorAll("[data-open-invitation]")
+    .forEach((btn) => btn.addEventListener("click", openInvitation));
+
+  document.querySelector(".skip-link")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    openInvitation();
+  });
+
+  // Tautan langsung seperti /#rsvp melewati intro dan sampul
+  if (window.location.hash && window.location.hash !== "#beranda") {
+    freeze();
+    root.classList.add("is-open", "cover-gone");
+    requestAnimationFrame(() =>
+      document
+        .getElementById(decodeURIComponent(window.location.hash.slice(1)))
+        ?.scrollIntoView(),
+    );
+  }
+</script>

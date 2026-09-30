@@ -1,0 +1,48 @@
+---
+import { wedding } from '../data/wedding';
+import PhotoSection from './ui/PhotoSection.astro';
+---
+
+<PhotoSection id="undangan" photo={wedding.photos.verse} shade="strong" label="Ayat dan kalimat pembuka" focusable>
+  <div class="intro" data-reveal>
+    <blockquote class="intro__verse">
+      <p>“{wedding.verse.text}”</p>
+      <footer>{wedding.verse.reference}</footer>
+    </blockquote>
+    <span class="double-rule double-rule--short" aria-hidden="true"></span>
+    <p class="intro__text">{wedding.intro}</p>
+  </div>
+</PhotoSection>
+
+<style>
+  .intro {
+    max-width: 24rem;
+    margin-inline: auto;
+    text-align: center;
+    display: grid;
+    gap: 1.5rem;
+  }
+  .intro__verse {
+    margin: 0;
+  }
+  .intro__verse p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.4rem, 6.4cqi, 1.7rem);
+    line-height: 1.45;
+    color: var(--white);
+  }
+  .intro__verse footer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+  }
+  .intro .double-rule--short {
+    margin: 0 auto;
+  }
+  .intro__text {
+    color: var(--text-soft);
+  }
+</style>

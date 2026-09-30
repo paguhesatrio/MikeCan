@@ -1,0 +1,93 @@
+---
+import { wedding } from '../data/wedding';
+const [first, second] = wedding.couple.split(' & ');
+---
+
+<!-- Hanya tampil di desktop. Foto statis di samping kolom undangan. -->
+<aside class="stage" aria-hidden="true">
+  <img class="stage__img" src={wedding.photos.side} alt="" width="1080" height="1920" decoding="async" />
+  <div class="stage__shade"></div>
+  <div class="stage__text">
+    <p class="stage__lead">Undangan pernikahan</p>
+    <p class="stage__names">{first} <span>&amp;</span> {second}</p>
+    <p class="stage__date">{wedding.dateLabel}</p>
+  </div>
+</aside>
+
+<style>
+  .stage {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .stage {
+      display: block;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: var(--panel-w);
+      overflow: hidden;
+      background: #3a3533;
+    }
+    :global(body[data-panel='left']) .stage {
+      left: var(--panel-w);
+      right: 0;
+    }
+
+    .stage__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .stage__shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgb(20 18 18 / 0.35), transparent 30%),
+        linear-gradient(to top, rgb(20 18 18 / 0.6), transparent 45%);
+    }
+
+    .stage__text {
+      position: absolute;
+      left: clamp(2.5rem, 5vw, 5rem);
+      right: clamp(2.5rem, 5vw, 5rem);
+      bottom: clamp(2.5rem, 6vh, 4.5rem);
+      color: #fff;
+    }
+    .stage__lead {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      opacity: 0.95;
+    }
+    .stage__names {
+      margin-top: 0.4rem;
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(3.2rem, 5.4vw, 6rem);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 24px rgb(0 0 0 / 0.25);
+    }
+    .stage__names span {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .stage__date {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.25rem 1.1rem;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 0.12);
+      border: 1px solid rgb(255 255 255 / 0.5);
+      color: #fff;
+      letter-spacing: 0.1em;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+  }
+</style>
