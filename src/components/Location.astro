@@ -1,195 +1,169 @@
 ---
-import { wedding, mapsUrl, mapsEmbedUrl } from '../data/wedding';
+import { wedding1 } from '../data/wedding';
 import SectionHead from './ui/SectionHead.astro';
-import PhotoSection from './ui/PhotoSection.astro';
-const venues = wedding.events;
+
+const photos = wedding1.photos.gallery.slice(0, 8);
+const background = wedding1.photos.background;
+
+// Rasio bergantian agar tampak seperti mosaik
+const ratios = ['3 / 4', '4 / 5', '4 / 3', '3 / 4', '4 / 5', '3 / 4', '4 / 3', '4 / 5'];
 ---
 
-<PhotoSection id="lokasi" photo={wedding.photos.location} shade="strong" labelledby="lokasi-title">
+<section class="gallery" aria-labelledby="galeri-title" style={`--gallery-bg: url('${background}');`}>
+  <div class="gallery__bg" aria-hidden="true"></div>
+
   <div class="container">
-    <SectionHead id="lokasi-title" title="Lokasi" subtitle="Petunjuk arah menuju tempat acara." />
+    <SectionHead id="galeri-title" title="Galeri" subtitle="Momen kebersamaan kami." />
 
-    <div class="location" data-reveal data-location>
-      <div class="location__tabs" role="tablist" aria-label="Pilih tempat acara">
-        {
-          venues.map((v, i) => (
-            <button
-              type="button"
-              role="tab"
-              id={`tab-${v.id}`}
-              aria-controls={`panel-${v.id}`}
-              aria-selected={i === 0 ? 'true' : 'false'}
-              tabindex={i === 0 ? 0 : -1}
-              class="location__tab"
-            >
-              {v.title.split(' ')[0]}
-            </button>
-          ))
-        }
-      </div>
-
+    <ul class="gallery__grid" data-reveal>
       {
-        venues.map((v, i) => (
-          <div class="location__panel glass" role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} hidden={i !== 0}>
-            <div class="map" data-embed={mapsEmbedUrl(v.mapsQuery)} data-title={`Peta ${v.venue}`}>
-              <svg class="map__art" viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                <rect width="400" height="220" fill="#2b2926" />
-                <path d="M-10 150 C 80 120, 140 190, 230 140 S 360 90, 410 120" stroke="#46423d" stroke-width="14" fill="none" />
-                <path d="M120 -10 L 170 230" stroke="#46423d" stroke-width="10" />
-                <path d="M300 -10 L 260 230" stroke="#46423d" stroke-width="8" />
-                <path d="M-10 60 L 410 40" stroke="#46423d" stroke-width="6" />
-                <rect x="30" y="80" width="60" height="40" rx="4" fill="#353230" />
-                <rect x="320" y="150" width="60" height="50" rx="4" fill="#353230" />
-                <rect x="190" y="60" width="50" height="30" rx="4" fill="#33382f" />
-              </svg>
-              <span class="map__pin" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 22s-7-6-7-12a7 7 0 0 1 14 0c0 6-7 12-7 12Z" fill="#e8c07a" /><circle cx="12" cy="10" r="2.6" fill="#2b2926" /></svg>
-              </span>
-              <button type="button" class="map__load" data-load-map>Tampilkan peta interaktif</button>
-            </div>
-
-            <div class="location__info">
-              <h3>{v.venue}</h3>
-              <p>{v.address}</p>
-              <a class="btn btn--primary" href={mapsUrl(v.mapsQuery)} target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
-                </svg>
-                Buka di Google Maps
-              </a>
-            </div>
-          </div>
+        photos.map((src, i) => (
+          <li class="gallery__item">
+            <button type="button" class="gallery__btn" data-index={i} aria-label={`Buka foto ${i + 1}`}>
+              <img
+                src={src}
+                alt={`Foto prewed ${i + 1}`}
+                width="800"
+                height="1000"
+                loading="lazy"
+                decoding="async"
+                style={`aspect-ratio: ${ratios[i]};`}
+              />
+            </button>
+          </li>
         ))
       }
-    </div>
+    </ul>
   </div>
-</PhotoSection>
+
+  <dialog class="gallery__dialog" aria-label="Pratinjau foto">
+    <button type="button" class="gallery__close" aria-label="Tutup">&times;</button>
+    <img class="gallery__full" alt="" />
+  </dialog>
+</section>
 
 <style>
-  .location__tabs {
-    display: flex;
-    gap: 0.3rem;
-    padding: 0.3rem;
-    margin-bottom: 1rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--glass-line);
-    background: var(--glass);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .location__tab {
-    flex: 1;
-    min-height: 2.75rem;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--text-soft);
-    cursor: pointer;
-    transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
-  }
-  .location__tab[aria-selected='true'] {
-    background: var(--white);
-    color: var(--ink);
-  }
-
-  .location__panel {
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .map {
+  .gallery {
     position: relative;
-    aspect-ratio: 16 / 10;
-    min-height: 12rem;
-    background: #2b2926;
+    isolation: isolate;
+    padding: var(--section-y) 0;
+    background: #0c0b0a;
   }
-  .map__art,
-  .map iframe {
+
+  /* Latar foto dari data/wedding.ts, digelapkan agar teks tetap terbaca */
+  .gallery__bg {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
+    z-index: -1;
+    background-image: var(--gallery-bg);
+    background-size: cover;
+    background-position: center;
+    overflow: clip;
   }
-  .map__pin {
+  .gallery__bg::after {
+    content: '';
     position: absolute;
-    left: 50%;
-    top: 42%;
-    width: 2.6rem;
-    transform: translate(-50%, -50%);
-  }
-  .map__load {
-    position: absolute;
-    left: 50%;
-    bottom: 1rem;
-    transform: translateX(-50%);
-    min-height: 2.75rem;
-    padding: 0.4rem 1rem;
-    border: 1px solid rgb(255 255 255 / 0.5);
-    border-radius: var(--radius);
-    background: rgb(0 0 0 / 0.45);
-    color: var(--white);
-    font-size: 0.85rem;
-    white-space: nowrap;
-    cursor: pointer;
+    inset: 0;
+    background: rgb(12 11 10 / 0.744);
   }
 
-  .location__info {
-    display: grid;
-    gap: 0.35rem;
-    justify-items: center;
-    text-align: center;
-    padding: clamp(1.4rem, 6cqi, 1.9rem);
+  .gallery__grid {
+    columns: 2;
+    column-gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
-  .location__info h3 {
+
+  .gallery__item {
+    break-inside: avoid;
+    margin-bottom: 6px;
+  }
+
+  .gallery__btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #1c1b19;
+    cursor: zoom-in;
+  }
+
+  .gallery__btn img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.4s var(--ease, ease), filter 0.4s var(--ease, ease);
+  }
+
+  .gallery__btn:hover img,
+  .gallery__btn:focus-visible img {
+    transform: scale(1.03);
+    filter: brightness(1.08);
+  }
+
+  .gallery__btn:focus-visible {
+    outline: 2px solid var(--white, #fff);
+    outline-offset: 2px;
+  }
+
+  .gallery__dialog {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    max-width: 100vw;
+    max-height: 100svh;
+  }
+  .gallery__dialog::backdrop {
+    background: rgb(0 0 0 / 0.9);
+  }
+  .gallery__full {
+    display: block;
+    max-width: 92vw;
+    max-height: 88svh;
+    margin: auto;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+  .gallery__close {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.15);
+    color: #fff;
     font-size: 1.6rem;
-    font-weight: 400;
-  }
-  .location__info p {
-    color: var(--text-soft);
-    margin-bottom: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
   }
 </style>
 
 <script>
-  const root = document.querySelector<HTMLElement>('[data-location]');
-  if (root) {
-    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
-    const select = (tab: HTMLButtonElement) => {
-      tabs.forEach((t) => {
-        const on = t === tab;
-        t.setAttribute('aria-selected', String(on));
-        t.tabIndex = on ? 0 : -1;
-        const panel = document.getElementById(t.getAttribute('aria-controls')!);
-        if (panel) panel.hidden = !on;
-      });
-    };
-    tabs.forEach((tab, i) => {
-      tab.addEventListener('click', () => select(tab));
-      tab.addEventListener('keydown', (e) => {
-        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        select(next);
-        next.focus();
+  const dialog = document.querySelector<HTMLDialogElement>('.gallery__dialog');
+  const full = document.querySelector<HTMLImageElement>('.gallery__full');
+  const close = document.querySelector<HTMLButtonElement>('.gallery__close');
+
+  if (dialog && full && close) {
+    document.querySelectorAll<HTMLButtonElement>('.gallery__btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const img = btn.querySelector('img');
+        if (!img) return;
+        full.src = img.currentSrc || img.src;
+        full.alt = img.alt;
+        dialog.showModal();
       });
     });
 
-    // Peta Google baru dimuat saat diminta, agar halaman tetap ringan.
-    root.querySelectorAll<HTMLButtonElement>('[data-load-map]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const map = btn.closest<HTMLElement>('.map');
-        if (!map) return;
-        const iframe = document.createElement('iframe');
-        iframe.src = map.dataset.embed!;
-        iframe.title = map.dataset.title ?? 'Peta lokasi';
-        iframe.loading = 'lazy';
-        iframe.referrerPolicy = 'no-referrer-when-downgrade';
-        iframe.allowFullscreen = true;
-        map.replaceChildren(iframe);
-      });
+    close.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
     });
   }
 </script>

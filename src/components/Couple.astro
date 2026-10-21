@@ -8,7 +8,7 @@ const people: Person[] = [wedding.bride, wedding.groom];
 
 <PhotoSection id="mempelai" photo={wedding.photos.couple} shade="strong" labelledby="mempelai-title">
   <div class="container">
-    <SectionHead id="mempelai-title" title="Mempelai" subtitle="Dua hati yang dipertemukan Tuhan, kini melangkah bersama." />
+    <SectionHead id="mempelai-title" title="Mempelai" subtitle="Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/I untuk menghadiri acara pernikahan kami" />
 
     <div class="couple">
       {
@@ -18,7 +18,7 @@ const people: Person[] = [wedding.bride, wedding.groom];
               <ArchWindow src={p.photo} alt={`Foto ${p.nickname}`} class="person__photo" />
               <p class="person__role">{p.role}</p>
               <h3 class="person__name">{p.fullName}</h3>
-              <p class="person__desc">{p.description}</p>
+              {/* <p class="person__desc">{p.description}</p> */}
               <p class="person__parents">
                 {p.childOrder}
                 <br />

@@ -2,9 +2,11 @@
 import { wedding } from "../data/wedding";
 
 interface Props {
-  /** Video (.mp4/.webm) atau GIF untuk latar sampul */
+  /** Video (.mp4/.webm) atau GIF untuk intro, diputar sekali */
   introSrc?: string;
-  /** Gambar yang tampil sebelum video siap. Sebaiknya gunakan frame terakhir video */
+  /** Video yang diputar terus-menerus setelah intro selesai (khusus video) */
+  loopSrc?: string;
+  /** Gambar yang tampil sebelum video siap. Sebaiknya gunakan frame pertama video */
   introPoster?: string;
   /** Khusus GIF: gambar diam frame terakhir, dipakai sebagai frame beku */
   introStill?: string;
@@ -14,6 +16,7 @@ interface Props {
 
 const {
   introSrc = "/video/intro.mp4",
+  loopSrc,
   introPoster = wedding.photos.cover,
   introStill,
   gifDuration = 5000,
@@ -43,6 +46,20 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
         preload="auto"
         aria-label={wedding.photos.alt}
         data-intro-video
+      />
+    )
+  }
+  {
+    !isGif && loopSrc && (
+      <video
+        class="cover__img cover__loop"
+        src={loopSrc}
+        muted
+        playsinline
+        loop
+        preload="auto"
+        aria-hidden="true"
+        data-loop-video
       />
     )
   }
@@ -118,7 +135,17 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     z-index: -2;
   }
 
-  /* Gradasi baru muncul saat video selesai, agar video tampil bersih */
+  /* Video loop: tersembunyi dulu, lalu fade-in saat mulai diputar, kecerahan 80% */
+  .cover__loop {
+    opacity: 0;
+    filter: brightness(0.8);
+    transition: opacity 0.6s ease;
+  }
+  .cover__loop.is-playing {
+    opacity: 1;
+  }
+
+  /* Gradasi baru muncul saat intro selesai, agar video tampil bersih */
   .cover__shade {
     position: absolute;
     inset: 0;
@@ -142,7 +169,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     justify-items: center;
   }
 
-  /* Selama video diputar, teks disembunyikan (hanya jika JS aktif) */
+  /* Selama intro diputar, teks disembunyikan (hanya jika JS aktif) */
   :global(.js) .cover:not(.is-ready) .cover__top,
   :global(.js) .cover:not(.is-ready) .cover__bottom {
     opacity: 0;
@@ -220,7 +247,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     pointer-events: none;
   }
 
-  /* Teks muncul berurutan setelah frame beku */
+  /* Teks muncul berurutan setelah intro selesai */
   @media (prefers-reduced-motion: no-preference) {
     .cover.is-ready .cover__top,
     .cover.is-ready .cover__bottom {
@@ -267,8 +294,9 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     "(prefers-reduced-motion: reduce)",
   ).matches;
 
-  /* ---------- 1. Intro: putar video/GIF, lalu bekukan frame terakhir ---------- */
+  /* ---------- 1. Intro: putar sekali, lalu crossfade ke video loop ---------- */
   let revealed = false;
+  let looping = false;
   let timer = 0;
 
   const reveal = () => {
@@ -280,14 +308,34 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
   };
 
   const video = cover?.querySelector<HTMLVideoElement>("[data-intro-video]");
+  const loopVideo = cover?.querySelector<HTMLVideoElement>("[data-loop-video]");
   const gif = cover?.querySelector<HTMLImageElement>("[data-intro-gif]");
 
-  // Video: hentikan tepat di frame terakhir
+  // Loop sudah dimuat di belakang layar. Saat siap diputar, tampilkan dengan fade.
+  const startLoop = () => {
+    if (!video || looping) return;
+    looping = true;
+    if (loopVideo && !reduceMotion) {
+      loopVideo
+        .play()
+        .then(() => {
+          loopVideo.classList.add("is-playing");
+          video.pause(); // intro tidak perlu lagi berjalan di bawah
+        })
+        .catch(() => {});
+    }
+  };
+
+  // Video intro: dipanggil saat "Lewati" atau timer habis
   const freezeVideo = () => {
     if (!video) return reveal();
-    video.pause();
-    if (Number.isFinite(video.duration) && video.duration > 0) {
-      video.currentTime = Math.max(0, video.duration - 0.05);
+    if (loopVideo && !reduceMotion) {
+      startLoop();
+    } else {
+      video.pause();
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        video.currentTime = Math.max(0, video.duration - 0.05);
+      }
     }
     reveal();
   };
@@ -324,15 +372,16 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
   timer = window.setTimeout(freeze, 15000);
 
   if (video) {
-    video.addEventListener("ended", reveal); // video otomatis diam di frame terakhir
+    video.addEventListener("ended", () => {
+      startLoop();
+      reveal();
+    });
     video.addEventListener("error", reveal);
 
     if (reduceMotion) {
-      // Tanpa animasi: langsung tampilkan frame terakhir
       if (video.readyState >= 1) freezeVideo();
       else video.addEventListener("loadedmetadata", freezeVideo, { once: true });
     } else {
-      // Jika autoplay diblokir (mis. mode hemat daya iOS), langsung tampilkan teks di atas poster
       video.play().catch(reveal);
     }
   } else if (gif) {
@@ -350,7 +399,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     reveal();
   }
 
-  /* ---------- 2. Buka undangan (kode lama Anda) ---------- */
+  /* ---------- 2. Buka undangan ---------- */
   const DURATION = 1000;
 
   const ease = (t: number) =>
@@ -373,6 +422,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     if (!cover) return;
     const offset = window.scrollY - cover.offsetHeight;
     video?.pause();
+    loopVideo?.pause();
     root.classList.add("cover-gone");
     window.scrollTo({ top: Math.max(0, offset), behavior: "instant" });
   };
@@ -411,6 +461,8 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
   // Tautan langsung seperti /#rsvp melewati intro dan sampul
   if (window.location.hash && window.location.hash !== "#beranda") {
     freeze();
+    video?.pause();
+    loopVideo?.pause(); // tidak perlu memutar video saat sampul disembunyikan
     root.classList.add("is-open", "cover-gone");
     requestAnimationFrame(() =>
       document

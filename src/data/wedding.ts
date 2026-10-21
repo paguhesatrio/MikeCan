@@ -48,18 +48,20 @@ export const wedding = {
   photos: {
     side: '/images/prewed-side.svg',       // foto statis di samping kolom (desktop)
     cover: '/images/prewed-cover.svg',     // sampul + pratinjau link + tengah piringan musik
-    opening: '/images/prewed-opening.svg', // hitung mundur
+    opening: '/images/main/1.png', // hitung mundur
     verse: '/images/prewed-closing.svg',   // ayat
-    couple: '/images/prewed-side.svg',     // mempelai
-    story: '/images/prewed-opening.svg',   // cerita
-    events: '/images/prewed-cover.svg',    // rangkaian acara
-    location: '/images/prewed-closing.svg',// lokasi
+    couple: '/images/main/2.png', // hitung mundur
+    story: '/images/main/3.png', // hitung mundur
+    events: '/images/main/4.png',    // rangkaian acara
+    location: '/images/main/6.png',// lokasi
     rsvp: '/images/prewed-side.svg',       // konfirmasi kehadiran
-    gift: '/images/prewed-opening.svg',    // tanda kasih
-    wishes: '/images/prewed-cover.svg',    // ucapan & doa
-    closing: '/images/prewed-closing.svg', // penutup
+    gift: '/images/main/6.png',    // tanda kasih
+    wishes: '/images/main/7.png',    // ucapan & doa
+    closing: '/images/main/8.png', // penutup
     alt: 'Foto prewedding Mika dan Candra',
   },
+
+  
 
   /** Letak kolom undangan di desktop: 'right' (foto di kiri) atau 'left' (foto di kanan). */
   desktopPanel: 'left' as 'right' | 'left',
@@ -72,7 +74,7 @@ export const wedding = {
   music: {
     src: '/music/lagu.mp3',
     cover: '/images/prewed-cover.svg', // foto kecil di tengah piringan hitam
-    volume: 0.6,
+    volume: 0.4,
   },
 
   /** Untuk tombol "Simpan Tanggal" (Google Calendar), waktu WIB */
@@ -86,7 +88,7 @@ export const wedding = {
   hero: {
     defaultGuest: 'Tamu Undangan',
     message:
-      'Demikianlah mereka bukan lagi dua, melainkan satu. Karena itu, apa yang telah dipersatukan Allah, tidak boleh diceraikan manusia.',
+      'Demikianlah Mereka Bukan Lagi Dua, Melainkan Satu. Karena Itu, Apa Yang Telah Dipersatukan Allah, Tidak Boleh Diceraikan Manusia.',
     reference: 'Matius 19:6',
   },
 
@@ -106,9 +108,9 @@ export const wedding = {
     role: 'Mempelai Pria',
     nickname: 'Candra',
     fullName: 'Candra Kiswantoro',
-    childOrder: 'Putra kedua dari',
-    father: 'Bapak ANJAR',
-    mother: 'Ibu ANJAR',
+    childOrder: 'Putra Keempat dari',
+    father: 'Bapak Anjar Budi Kiswono',
+    mother: 'Ibu Ropini',
     description:
       'Seorang PNS Sukses Di Kabupaten Landak',
     photo: '/images/bride.svg',
@@ -118,10 +120,10 @@ export const wedding = {
   groom: {
     role: 'Mempelai Wanita',
     nickname: 'Mika',
-    fullName: 'Mika CU BONAVENTURA',
-    childOrder: 'Putri pertama dari',
-    father: 'Bapak Stefanus Santoso',
-    mother: 'Ibu Ruth Handayani',
+    fullName: 'Mika Maya Lestari',
+    childOrder: 'Putri Kedua dari',
+    father: 'Bapak Pelam S.',
+    mother: 'Ibu Amisna',
     description:
       'Menejer Keuangan CU BONAVENTURA di PALOH, dan kini bersiap Mengantur keuangan Rumah bersama Candra.',
     photo: '/images/groom.svg',
@@ -137,24 +139,24 @@ export const wedding = {
       'Candra Galau Suka Minum Amer',
     milestones: [
       {
-        date: 'Agustus 2019',
-        title: 'Pertemuan pertama',
-        text: 'Berkenalan di CU BONAVENTURA CIEEEEEEEEEEEE',
+        date: 'Maret 2024',
+        title: 'Awal Bertemu',
+        text: 'Awal kisah kami bermula pada Maret 2024. Pertemuan sederhana tersebut menjadi titik awal saling mengenal dan bertukar cerita satu sama lain.',
       },
       {
-        date: 'Februari 2021',
-        title: 'Memulai hubungan',
-        text: 'Setelah Memutuskan untuk Pacaran Kemudian Candra PNS DAN LDR dengan Mika #huffffffttttt',
+        date: 'Desember 2024',
+        title: 'Menjalin Kasih',
+        text: 'Berawal dari pesan singkat yang  terus menerus kami kirimkan dan rasa nyaman yang makin tumbuh, kami memberanikan diri untuk saling mengungkapkan perasaan. Tepat pada 28 Desember 2024, kami meresmikan komitmen untuk melangkah bersama sebagai pasangan kekasih.',
       },
       {
-        date: 'Juni 2025',
-        title: 'Lamaran',
-        text: 'Di hadapan kedua keluarga, Mika meminta Candra menjadi teman hidupnya. Candra menjawab ya.',
+        date: 'Februari 2026',
+        title: 'Menjadi Kita',
+        text: 'Berbekal perjalanan indah bersama selama lebih dari satu tahun, kami melangkah ke jenjang yang lebih serius. Pada 15 Februari 2026, ditandai dengan acara pertunangan yang didukung serta disaksikan oleh keluarga, kami memperteguh niat untuk saling mengikat janji setia.',
       },
       {
-        date: 'November 2026',
-        title: 'Hari pernikahan',
-        text: 'Kami mengikat janji di hadapan Tuhan, keluarga, dan sahabat yang kami kasihi.',
+        date: 'November 2026 - Selamanya',
+        title: 'Selamanya',
+        text: 'Melalui berbagai proses kedewasaan, saling memahami, serta restu penuh dari kedua orang tua dan keluarga besar, kami memutuskan membangun keluarga kecil sebagai Suami & Istri, melalui tekad dan ketulusan hati, kami siap mengikat janji suci dalam bahtera pernikahan yang penuh kasih',
       },
     ],
   },
@@ -218,4 +220,21 @@ export const calendarUrl = () => {
     details: `Undangan pernikahan ${wedding.couple}`,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+export const wedding1 = {
+  // ...data lain
+  photos: {
+    background: '/images/main/5.png',
+    gallery: [
+      '/images/main/1.png',
+      '/images/main/2.png',
+      '/images/main/3.png',
+      '/images/main/4.png',
+      '/images/main/5.png',
+      '/images/main/6.png',
+      '/images/main/7.png',
+      '/images/main/8.png',
+    ],
+  },
 };

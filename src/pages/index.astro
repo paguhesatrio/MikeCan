@@ -21,26 +21,21 @@ import MusicPlayer from "../components/MusicPlayer.astro";
   <!-- Desktop: foto statis di satu sisi -->
   <SidePhoto />
 
-  <!-- Video pembuka: tampil di atas semuanya, lalu hilang ke cover -->
-  <!-- <IntroVideo src="/video/video.gif" /> -->
-
   <!-- Kolom undangan: selebar HP di desktop, layar penuh di mobile -->
   <div class="panel">
     <!-- GIF -->
     <Cover
       introSrc="/video/video.mp4"
-      introStill="/images/tes.png"
+      loopSrc="/video/first.mp4"
       gifDuration={5000}
     />
 
     <main class="invitation-body">
       <Opening />
-      <!-- <Intro /> -->
       <Couple />
       <Story />
       <Events />
       <Location />
-      <!-- <Rsvp /> -->
       <Gift />
       <Guestbook />
     </main>
