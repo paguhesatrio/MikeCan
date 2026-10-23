@@ -595,16 +595,6 @@ const rock = toRects(
 
               <!-- Dialog -->
               <div class="dialog">
-                <img
-                  class="dialog__avatar"
-                  data-avatar
-                  src={wedding.groom.photo}
-                  alt=""
-                  width="96"
-                  height="96"
-                  loading="lazy"
-                  decoding="async"
-                />
                 <div>
                   <p class="dialog__label" data-label>Mulai</p>
                   <p class="dialog__name" data-name>Cerita Kami</p>
@@ -643,8 +633,6 @@ const rock = toRects(
         ground: GROUND,
         viewW: VIEW_W,
         worldW: WORLD_W,
-        boyPhoto: wedding.groom.photo,
-        couplePhoto: story.photo,
       })}
     />
   </div>
@@ -942,20 +930,13 @@ const rock = toRects(
   .dialog {
     position: relative;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 1fr;
     gap: 0.6rem;
     min-height: 8.6rem;
     padding: 0.6rem 0.7rem 0.9rem;
     background: rgb(14 16 14 / 0.94);
     border-top: 3px solid #f1e9dd;
     color: #ece7df;
-  }
-  .dialog__avatar {
-    width: 2.8rem;
-    height: 2.8rem;
-    object-fit: cover;
-    border: 2px solid var(--accent);
-    background: #2a2a2a;
   }
   .dialog__label {
     font-size: 0.68rem;
@@ -1096,8 +1077,6 @@ const rock = toRects(
       ground: number;
       viewW: number;
       worldW: number;
-      boyPhoto: string;
-      couplePhoto: string;
     };
     const N = data.milestones.length;
     const WALK = 0.6; // 60% scroll tiap bab dipakai berjalan, sisanya berhenti membaca dialog
@@ -1121,7 +1100,6 @@ const rock = toRects(
       track.querySelectorAll<SVGElement>(".hud__heart"),
     );
     const chapter = track.querySelector<HTMLElement>("[data-chapter]")!;
-    const avatar = track.querySelector<HTMLImageElement>("[data-avatar]")!;
     const label = track.querySelector<HTMLElement>("[data-label]")!;
     const nameEl = track.querySelector<HTMLElement>("[data-name]")!;
     const textEl = track.querySelector<HTMLElement>("[data-text]")!;
@@ -1190,14 +1168,12 @@ const rock = toRects(
       if (index < 0) {
         label.textContent = "Mulai";
         nameEl.textContent = "Cerita Kami";
-        avatar.src = data.boyPhoto;
         typeText(data.lead);
         return;
       }
       const m = data.milestones[index];
       label.textContent = `Kisah ${index + 1} · ${m.date}`;
       nameEl.textContent = m.title;
-      avatar.src = index === 0 ? data.boyPhoto : data.couplePhoto;
       typeText(m.text);
     };
 

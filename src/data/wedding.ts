@@ -46,8 +46,8 @@ export const wedding = {
    * Satu foto boleh dipakai di beberapa bagian.
    */
   photos: {
-    side: '/images/prewed-side.svg',       // foto statis di samping kolom (desktop)
-    cover: '/images/prewed-cover.svg',     // sampul + pratinjau link + tengah piringan musik
+    side: '/images/bg.jpg',       // foto statis di samping kolom (desktop)
+    cover: '/images/main/7.png',     // sampul + pratinjau link + tengah piringan musik
     opening: '/images/main/1.png', // hitung mundur
     verse: '/images/prewed-closing.svg',   // ayat
     couple: '/images/main/2.png', // hitung mundur
@@ -61,7 +61,7 @@ export const wedding = {
     alt: 'Foto prewedding Mika dan Candra',
   },
 
-  
+
 
   /** Letak kolom undangan di desktop: 'right' (foto di kiri) atau 'left' (foto di kanan). */
   desktopPanel: 'left' as 'right' | 'left',
@@ -73,7 +73,7 @@ export const wedding = {
    */
   music: {
     src: '/music/lagu.mp3',
-    cover: '/images/prewed-cover.svg', // foto kecil di tengah piringan hitam
+    cover: '/images/main/7.png', // foto kecil di tengah piringan hitam
     volume: 0.4,
   },
 
@@ -113,7 +113,7 @@ export const wedding = {
     mother: 'Ibu Ropini',
     description:
       'Seorang PNS Sukses Di Kabupaten Landak',
-    photo: '/images/bride.svg',
+    photo: '/images/pengantin/W2.jpg',
     instagram: 'cancandrak',
   } satisfies Person,
 
@@ -126,7 +126,7 @@ export const wedding = {
     mother: 'Ibu Amisna',
     description:
       'Menejer Keuangan CU BONAVENTURA di PALOH, dan kini bersiap Mengantur keuangan Rumah bersama Candra.',
-    photo: '/images/groom.svg',
+    photo: '/images/pengantin/W1.jpg',
     instagram: 'mikamayalestari',
   } satisfies Person,
 
@@ -135,8 +135,7 @@ export const wedding = {
     photoAlt: 'Mika dan Candra berjalan bergandengan tangan',
     lead:
       'Kami bertemu di tempat yang sederhana, lalu belajar bahwa kasih bertumbuh lewat hal-hal kecil yang dilakukan dengan setia.',
-    leads:
-      'Candra Galau Suka Minum Amer',
+    leads: 'Dua hati yang tak sengaja bertemu, lalu perlahan menemukan alasan untuk tetap bersama.',
     milestones: [
       {
         date: 'Maret 2024',
@@ -167,7 +166,7 @@ export const wedding = {
       title: 'Pemberkatan Pernikahan',
       dateLabel: 'Sabtu, 21 November 2026',
       time: '09.00 – 11.00 WIB',
-      venue: 'Gereja katolik St fransiskus asisi Singkawang',
+      venue: 'Gereja St Fransiskus Asisi Singkawang',
       address: 'Jl. P. Diponegoro No.1, Pasiran, Singkawang',
       mapsQuery: 'Gereja Katolik Paroki Santo Fransiskus Assisi, Singkawang',
     },
@@ -186,8 +185,8 @@ export const wedding = {
     intro:
       'Doa dan kehadiran Anda adalah hadiah terindah bagi kami. Bila Anda ingin memberikan tanda kasih, Anda dapat mengirimkannya melalui rekening berikut.',
     accounts: [
-      { bank: 'BCA', number: '1234567890', holder: 'Mika Maya Lestari' },
-      { bank: 'Mandiri', number: '1370012345678', holder: 'Candra Kiswantoro' },
+      { bank: 'Mandiri', number: '1460022403971', holder: 'Mika Maya Lestari' },
+      { bank: 'BCA', number: '8170911173', holder: 'Candra Kiswantoro' },
     ],
     // Nomor WhatsApp dalam format internasional tanpa tanda + atau spasi.
     whatsapp: '6282154392616',
@@ -199,7 +198,7 @@ export const wedding = {
     message:
       'Merupakan suatu kehormatan dan sukacita bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.',
     signature: 'Kami yang berbahagia,',
-    families: 'Keluarga Santoso & Keluarga Kristanto',
+    families: 'Keluarga Anjar Budi Kiswono & Keluarga Pelam S.',
   },
 };
 
@@ -227,14 +226,14 @@ export const wedding1 = {
   photos: {
     background: '/images/main/5.png',
     gallery: [
-      '/images/main/1.png',
-      '/images/main/2.png',
-      '/images/main/3.png',
-      '/images/main/4.png',
-      '/images/main/5.png',
-      '/images/main/6.png',
-      '/images/main/7.png',
-      '/images/main/8.png',
+      '/images/galeri/1.jpg',
+      '/images/galeri/2.jpg',
+      '/images/galeri/3.jpg',
+      '/images/galeri/4.jpg',
+      '/images/galeri/5.jpg',
+      '/images/galeri/6.jpg',
+      '/images/galeri/7.jpg',
+      '/images/galeri/8.jpg',
     ],
   },
 };
