@@ -26,7 +26,12 @@ const [first, second] = wedding.couple.split(" & ");
 const isGif = introSrc.toLowerCase().endsWith(".gif");
 ---
 
-<header class="cover" id="beranda" data-duration={gifDuration} data-still={introStill}>
+<header
+  class="cover"
+  id="beranda"
+  data-duration={gifDuration}
+  data-still={introStill}
+>
   {
     isGif ? (
       <img
@@ -107,7 +112,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
     </button>
   </div>
 
-  <button type="button" class="cover__skip" data-intro-skip>Lewati</button>
+  <!-- <button type="button" class="cover__skip" data-intro-skip>Lewati</button> -->
 </header>
 
 <style>
@@ -364,9 +369,7 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
 
   const freeze = () => (gif ? freezeGif() : freezeVideo());
 
-  cover
-    ?.querySelector("[data-intro-skip]")
-    ?.addEventListener("click", freeze);
+  cover?.querySelector("[data-intro-skip]")?.addEventListener("click", freeze);
 
   // Pengaman: apa pun yang terjadi, teks pasti muncul
   timer = window.setTimeout(freeze, 15000);
@@ -380,7 +383,8 @@ const isGif = introSrc.toLowerCase().endsWith(".gif");
 
     if (reduceMotion) {
       if (video.readyState >= 1) freezeVideo();
-      else video.addEventListener("loadedmetadata", freezeVideo, { once: true });
+      else
+        video.addEventListener("loadedmetadata", freezeVideo, { once: true });
     } else {
       video.play().catch(reveal);
     }

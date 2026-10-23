@@ -29,15 +29,15 @@ export interface WeddingEvent {
 const eventDateISO = '2026-11-21T10:00:00+07:00';
 
 export const wedding = {
-  couple: 'Mika & Candra',
+  couple: 'Candra & Mika',
   dateISO: eventDateISO,
   dateLabel: 'Sabtu, 21 November 2026',
   dateShort: '21.11.2026',
 
   site: {
-    title: 'Mika & Candra',
+    title: 'Candra & Mika',
     description:
-      'Dengan sukacita kami mengundang Anda untuk hadir dan mendoakan pernikahan Mika & Candra pada Sabtu, 21 November 2026.',
+      'Dengan sukacita kami mengundang Anda untuk hadir dan mendoakan pernikahan Candra & Mika pada Sabtu, 21 November 2026.',
   },
 
   /**
@@ -48,16 +48,16 @@ export const wedding = {
   photos: {
     side: '/images/bg.jpg',       // foto statis di samping kolom (desktop)
     cover: '/images/main/7.png',     // sampul + pratinjau link + tengah piringan musik
-    opening: '/images/main/1.png', // hitung mundur
+    opening: '/images/main/9.jpg', // hitung mundur
     verse: '/images/prewed-closing.svg',   // ayat
     couple: '/images/main/2.png', // hitung mundur
     story: '/images/main/3.png', // hitung mundur
     events: '/images/main/4.png',    // rangkaian acara
-    location: '/images/main/6.png',// lokasi
+    location: '/images/main/8.png',// lokasi
     rsvp: '/images/prewed-side.svg',       // konfirmasi kehadiran
     gift: '/images/main/6.png',    // tanda kasih
     wishes: '/images/main/7.png',    // ucapan & doa
-    closing: '/images/main/8.png', // penutup
+    closing: '/images/main/5.png', // penutup
     alt: 'Foto prewedding Mika dan Candra',
   },
 
@@ -79,7 +79,7 @@ export const wedding = {
 
   /** Untuk tombol "Simpan Tanggal" (Google Calendar), waktu WIB */
   calendar: {
-    title: 'Pernikahan Mika & Candra',
+    title: 'Pernikahan Candra & Mika',
     start: '20261212T100000',
     end: '20261212T210000',
     location: 'Gereja Kasih Karunia, Jl. Melati Raya No. 12, Kebayoran Baru, Jakarta Selatan',
@@ -165,7 +165,7 @@ export const wedding = {
       id: 'pemberkatan',
       title: 'Pemberkatan Pernikahan',
       dateLabel: 'Sabtu, 21 November 2026',
-      time: '09.00 – 11.00 WIB',
+      time: '08.00 WIB – Selesai',
       venue: 'Gereja St Fransiskus Asisi Singkawang',
       address: 'Jl. P. Diponegoro No.1, Pasiran, Singkawang',
       mapsQuery: 'Gereja Katolik Paroki Santo Fransiskus Assisi, Singkawang',
@@ -174,7 +174,7 @@ export const wedding = {
       id: 'resepsi',
       title: 'Resepsi',
       dateLabel: 'Sabtu, 21 November 2026',
-      time: '12.00 – 17.00 WIB',
+      time: '12.00 – 16.00 WIB',
       venue: 'Taman Rekreasi Teratai Indah',
       address: 'Jl. Burhani No.5, Pasiran, Kota Singkawang',
       mapsQuery: 'Taman Rekreasi Teratai Indah',
@@ -191,7 +191,7 @@ export const wedding = {
     // Nomor WhatsApp dalam format internasional tanpa tanda + atau spasi.
     whatsapp: '6282154392616',
     whatsappMessage:
-      'Halo Mika & Candra, saya [nama] ingin mengonfirmasi bahwa saya telah mengirimkan tanda kasih untuk pernikahan kalian. God Bless You.',
+      'Halo Candra & Mika, saya [nama] ingin mengonfirmasi bahwa saya telah mengirimkan tanda kasih untuk pernikahan kalian. God Bless You.',
   },
 
   closing: {
@@ -224,7 +224,7 @@ export const calendarUrl = () => {
 export const wedding1 = {
   // ...data lain
   photos: {
-    background: '/images/main/5.png',
+    background: '/images/main/8.png',
     gallery: [
       '/images/galeri/1.jpg',
       '/images/galeri/2.jpg',

@@ -5,8 +5,10 @@
  * Timeline diganti game platformer tampak samping di dalam bingkai TV retro.
  * Kamera mengikuti karakter pria (dunia bergeser saat ia berjalan ke kanan),
  * ia melompati rintangan, bertemu karakter wanita di checkpoint 1,
- * lalu keduanya berjalan berdua sampai kapel. Setiap checkpoint menampilkan dialog
+ * lalu keduanya berjalan berdua sampai gereja. Setiap checkpoint menampilkan dialog
  * dari story.milestones di wedding.ts.
+ * Karakter pria dan wanita memakai gambar: /icon/cowok.png dan /icon/cewek.png.
+ * Gereja memakai gambar: /icon/gereja.png.
  */
 import "@fontsource/pixelify-sans/latin-400.css";
 import "@fontsource/pixelify-sans/latin-600.css";
@@ -43,13 +45,9 @@ const bushesX = range(120, WORLD_W - 120, 170).filter((x) =>
 );
 const treesX = range(210, WORLD_W - 200, 340);
 
-/* ---------- Sprite piksel ---------- */
+/* ---------- Sprite pixel untuk dekorasi (tetap dibuat dari kode) ---------- */
 type Px = { x: number; y: number; w: number; c: string };
-const toRects = (
-  rows: string[],
-  palette: Record<string, string>,
-  yOffset = 0,
-): Px[] => {
+const toRects = (rows: string[], palette: Record<string, string>): Px[] => {
   const out: Px[] = [];
   rows.forEach((row, y) => {
     let x = 0;
@@ -61,87 +59,12 @@ const toRects = (
       }
       let w = 1;
       while (row[x + w] === ch) w++;
-      out.push({ x, y: y + yOffset, w, c: palette[ch] });
+      out.push({ x, y, w, c: palette[ch] });
       x += w;
     }
   });
   return out;
 };
-
-const boyPal = {
-  H: "#2b1d16",
-  S: "#e2b48d",
-  E: "#161616",
-  W: "#f3efe7",
-  J: "#2d3858",
-  P: "#22242b",
-  B: "#111111",
-  T: "#b8453f",
-};
-const boyBody = toRects(
-  [
-    "...HHHHH....",
-    "..HHHHHHH...",
-    "..HHHHHHHS..",
-    "..HHSSSESS..",
-    "..HSSSSSSS..",
-    "...SSSSSS...",
-    "....SSSS....",
-    "..JJJWTJJ...",
-    ".JJJJWTJJJ..",
-    ".SJJJWWJJS..",
-    ".SJJJJJJJS..",
-    "..JJJJJJJ...",
-  ],
-  boyPal,
-);
-const boyLegsA = toRects(
-  ["..PPP.PPP...", "..PPP..PPP..", "..PP....PP..", ".BBB....BBB."],
-  boyPal,
-  12,
-);
-const boyLegsB = toRects(
-  ["...PPPPP....", "...PPPPP....", "....PPP.....", "...BBBBB...."],
-  boyPal,
-  12,
-);
-
-const girlPal = {
-  L: "#4a2c20",
-  S: "#e8bf9b",
-  E: "#161616",
-  D: "#f1e9dd",
-  R: "#e8c07a",
-  B: "#7a5a48",
-};
-const girlBody = toRects(
-  [
-    "...LLLLL....",
-    "..LLLLLLL...",
-    ".LLLLLLLLS..",
-    ".LLLSSSESS..",
-    ".LLSSSSSSS..",
-    ".LLLSSSSS...",
-    ".LLL.SSS....",
-    ".LLDDDDDD...",
-    "..DDRRRRDD..",
-    ".SDDDDDDDS..",
-    ".SDDDDDDDDS.",
-    "..DDDDDDDD..",
-    ".DDDDDDDDDD.",
-  ],
-  girlPal,
-);
-const girlLegsA = toRects(
-  [".DDDDDDDDDD.", "...SS..SS...", "..BBB..BBB.."],
-  girlPal,
-  13,
-);
-const girlLegsB = toRects(
-  ["..DDDDDDDD..", "....SSSS....", "....BBBB...."],
-  girlPal,
-  13,
-);
 
 const tree = toRects(
   [
@@ -157,37 +80,6 @@ const tree = toRects(
     "....TTTT....",
   ],
   { G: "#2f4c34", g: "#3f6443", T: "#6b4a32" },
-);
-
-const chapelPx = toRects(
-  [
-    ".........CC.........",
-    "........CCCC........",
-    ".........CC.........",
-    "........RRRR........",
-    ".......RRRRRR.......",
-    "......RRRRRRRR......",
-    ".....RRRRRRRRRR.....",
-    "....RRRRRRRRRRRR....",
-    "...RRRRRRRRRRRRRR...",
-    "..RRRRRRRRRRRRRRRR..",
-    "..WWWWWWWWWWWWWWWW..",
-    "..WWWbbWWWWWWbbWWW..",
-    "..WWWbbWWWWWWbbWWW..",
-    "..WWWWWWWDDWWWWWWW..",
-    "..WWWWWWDDDDWWWWWW..",
-    "..WWWWWWDDDDWWWWWW..",
-    "..WWWWWWDDDDWWWWWW..",
-    ".SSSSSSSSSSSSSSSSSS.",
-  ],
-  {
-    C: "#e8c07a",
-    R: "#7b3b33",
-    W: "#efe8dc",
-    b: "#8fb3c9",
-    D: "#5a3a2a",
-    S: "#9c8f7c",
-  },
 );
 
 const cloud = toRects(
@@ -235,18 +127,6 @@ const rock = toRects(
   <div class="container">
     <SectionHead id="cerita-title" title="Cerita Kami" subtitle={story.lead} />
 
-    <!-- <figure class="polaroid" data-reveal>
-      <img
-        src={story.photo}
-        alt={story.photoAlt}
-        width="720"
-        height="720"
-        loading="lazy"
-        decoding="async"
-      />
-      <figcaption>M &amp; C, sejak 2019</figcaption>
-    </figure> -->
-
     <!-- Versi teks: untuk pembaca layar & bila JavaScript mati -->
     <ol class="story-list">
       {
@@ -283,268 +163,158 @@ const rock = toRects(
                 </span>
               </div>
 
-              <!-- Dunia game: kamera mengikuti karakter pria -->
-              <svg
-                class="game"
-                viewBox={`0 ${VIEW_TOP} ${VIEW_W} 180`}
-                preserveAspectRatio="xMidYMid slice"
-                shape-rendering="crispEdges"
-              >
-                <defs>
-                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#7fb0dc"></stop>
-                    <stop offset="1" stop-color="#cfe4ef"></stop>
-                  </linearGradient>
-                  <pattern
-                    id="dirt"
-                    width="20"
-                    height="20"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <rect width="20" height="20" fill="#9c6d44"></rect>
-                    <rect y="9" width="20" height="1" fill="#7d5433"></rect>
-                    <rect y="19" width="20" height="1" fill="#7d5433"></rect>
-                    <rect x="9" width="1" height="9" fill="#7d5433"></rect>
-                    <rect x="19" y="10" width="1" height="9" fill="#7d5433"
-                    ></rect>
-                    <rect x="3" y="3" width="2" height="2" fill="#b0825a"
-                    ></rect>
-                    <rect x="13" y="13" width="2" height="2" fill="#b0825a"
-                    ></rect>
-                  </pattern>
-                </defs>
-
-                <!-- langit (diam) -->
-                <rect y={VIEW_TOP} width={VIEW_W} height="180" fill="url(#sky)"
-                ></rect>
-
-                <!-- lapis jauh: awan (bergerak paling lambat) -->
-                <g data-layer="0.25">
-                  {
-                    cloudsX.map((x, i) => (
-                      <g
-                        transform={`translate(${x} ${VIEW_TOP + 8 + (i % 3) * 13}) scale(${i % 2 ? 1.8 : 2.3})`}
-                      >
-                        {cloud.map((r) => (
-                          <rect
-                            x={r.x}
-                            y={r.y}
-                            width={r.w}
-                            height="1"
-                            fill={r.c}
-                          />
-                        ))}
-                      </g>
-                    ))
-                  }
-                </g>
-
-                <!-- lapis tengah: bukit -->
-                <g data-layer="0.55" shape-rendering="auto">
-                  {
-                    hillsX.map((x, i) => (
-                      <path
-                        d={`M${x} ${GROUND + 4} Q${x + 80} ${GROUND - (i % 2 ? 90 : 120)} ${x + 160} ${GROUND + 4} Z`}
-                        fill={i % 2 ? "#8fbf7a" : "#7aae66"}
-                        stroke="#5d8c4c"
-                        stroke-width="2"
-                      />
-                    ))
-                  }
-                </g>
-
-                <!-- lapis depan: tanah, dekorasi, karakter (kecepatan penuh) -->
-                <g data-layer="1">
-                  {
-                    treesX.map((x) => (
-                      <g
-                        transform={`translate(${x} ${GROUND - 48}) scale(4 4.8)`}
-                      >
-                        {tree.map((r) => (
-                          <rect
-                            x={r.x}
-                            y={r.y}
-                            width={r.w}
-                            height="1"
-                            fill={r.c}
-                          />
-                        ))}
-                      </g>
-                    ))
-                  }
-                  {
-                    bushesX.map((x) => (
-                      <g
-                        transform={`translate(${x} ${GROUND - 12}) scale(2.4)`}
-                      >
-                        {bush.map((r) => (
-                          <rect
-                            x={r.x}
-                            y={r.y}
-                            width={r.w}
-                            height="1"
-                            fill={r.c}
-                          />
-                        ))}
-                      </g>
-                    ))
-                  }
-
-                  <!-- tanah -->
-                  <rect
-                    x="-20"
-                    y={GROUND}
-                    width={WORLD_W + 40}
-                    height={240 - GROUND}
-                    fill="url(#dirt)"></rect>
-                  <rect
-                    x="-20"
-                    y={GROUND}
-                    width={WORLD_W + 40}
-                    height="7"
-                    fill="#6aa84f"></rect>
-                  <rect
-                    x="-20"
-                    y={GROUND + 7}
-                    width={WORLD_W + 40}
-                    height="2"
-                    fill="#4f8a3a"></rect>
-
-                  <!-- papan mulai -->
-                  <g transform={`translate(${START_X - 50} ${GROUND - 34})`}>
-                    <rect x="14" y="16" width="4" height="18" fill="#5a3d27"
-                    ></rect>
-                    <rect x="0" y="0" width="34" height="17" fill="#8a5d3b"
-                    ></rect>
-                    <rect x="2" y="2" width="30" height="13" fill="#a8764d"
-                    ></rect>
-                    <text x="17" y="12" text-anchor="middle" class="sign-text"
-                      >MULAI</text
+              <!-- Dunia game: latar & objek dalam SVG -->
+              <div class="stage">
+                <svg
+                  class="game"
+                  viewBox={`0 ${VIEW_TOP} ${VIEW_W} 180`}
+                  preserveAspectRatio="xMidYMid slice"
+                  shape-rendering="crispEdges"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#7fb0dc"></stop>
+                      <stop offset="1" stop-color="#cfe4ef"></stop>
+                    </linearGradient>
+                    <pattern
+                      id="dirt"
+                      width="20"
+                      height="20"
+                      patternUnits="userSpaceOnUse"
                     >
+                      <rect width="20" height="20" fill="#9c6d44"></rect>
+                      <rect y="9" width="20" height="1" fill="#7d5433"></rect>
+                      <rect y="19" width="20" height="1" fill="#7d5433"></rect>
+                      <rect x="9" width="1" height="9" fill="#7d5433"></rect>
+                      <rect x="19" y="10" width="1" height="9" fill="#7d5433"
+                      ></rect>
+                      <rect x="3" y="3" width="2" height="2" fill="#b0825a"
+                      ></rect>
+                      <rect x="13" y="13" width="2" height="2" fill="#b0825a"
+                      ></rect>
+                    </pattern>
+                  </defs>
+
+                  <!-- langit (diam) -->
+                  <rect
+                    y={VIEW_TOP}
+                    width={VIEW_W}
+                    height="180"
+                    fill="url(#sky)"></rect>
+
+                  <!-- lapis jauh: awan (bergerak paling lambat) -->
+                  <g data-layer="0.25">
+                    {
+                      cloudsX.map((x, i) => (
+                        <g
+                          transform={`translate(${x} ${VIEW_TOP + 8 + (i % 3) * 13}) scale(${i % 2 ? 1.8 : 2.3})`}
+                        >
+                          {cloud.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))}
+                        </g>
+                      ))
+                    }
                   </g>
 
-                  <!-- rintangan -->
-                  {
-                    obstacles.map((x) => (
-                      <g
-                        transform={`translate(${x - 16} ${GROUND - 17}) scale(3 2.9)`}
-                      >
-                        {rock.map((r) => (
-                          <rect
-                            x={r.x}
-                            y={r.y}
-                            width={r.w}
-                            height="1"
-                            fill={r.c}
-                          />
-                        ))}
-                      </g>
-                    ))
-                  }
-
-                  <!-- kapel di ujung -->
-                  <g
-                    transform={`translate(${chapelX - 45} ${GROUND - 81}) scale(4.5)`}
-                  >
+                  <!-- lapis tengah: bukit -->
+                  <g data-layer="0.55" shape-rendering="auto">
                     {
-                      chapelPx.map((r) => (
-                        <rect
-                          x={r.x}
-                          y={r.y}
-                          width={r.w}
-                          height="1"
-                          fill={r.c}
+                      hillsX.map((x, i) => (
+                        <path
+                          d={`M${x} ${GROUND + 4} Q${x + 80} ${GROUND - (i % 2 ? 90 : 120)} ${x + 160} ${GROUND + 4} Z`}
+                          fill={i % 2 ? "#8fbf7a" : "#7aae66"}
+                          stroke="#5d8c4c"
+                          stroke-width="2"
                         />
                       ))
                     }
                   </g>
 
-                  <!-- checkpoint: tiang bendera -->
-                  {
-                    cpX.map((x, i) => (
-                      <g
-                        class="flag"
-                        data-flag={i}
-                        transform={`translate(${x - 34} ${GROUND - 64})`}
-                      >
-                        <rect
-                          x="0"
-                          y="0"
-                          width="3"
-                          height="64"
-                          fill="#e9e4da"
-                        />
-                        <rect
-                          x="-1"
-                          y="-4"
-                          width="5"
-                          height="5"
-                          fill="#e8c07a"
-                        />
-                        <path class="flag__cloth" d="M3 4h20v6h-4v6h4v6H3z" />
-                        <text x="10" y="16" class="flag__num">
-                          {i + 1}
-                        </text>
-                        <rect
-                          x="-4"
-                          y="60"
-                          width="11"
-                          height="4"
-                          fill="#6b6259"
-                        />
-                      </g>
-                    ))
-                  }
+                  <!-- lapis depan: tanah, dekorasi (kecepatan penuh) -->
+                  <g data-layer="1">
+                    {
+                      treesX.map((x) => (
+                        <g
+                          transform={`translate(${x} ${GROUND - 48}) scale(4 4.8)`}
+                        >
+                          {tree.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))}
+                        </g>
+                      ))
+                    }
+                    {
+                      bushesX.map((x) => (
+                        <g
+                          transform={`translate(${x} ${GROUND - 12}) scale(2.4)`}
+                        >
+                          {bush.map((r) => (
+                            <rect
+                              x={r.x}
+                              y={r.y}
+                              width={r.w}
+                              height="1"
+                              fill={r.c}
+                            />
+                          ))}
+                        </g>
+                      ))
+                    }
 
-                  <g class="walker" data-girl>
-                    <g class="walker__flip">
-                      <g class="walker__body"
-                        >{
-                          girlBody.map((r) => (
-                            <rect
-                              x={r.x}
-                              y={r.y}
-                              width={r.w}
-                              height="1"
-                              fill={r.c}
-                            />
-                          ))
-                        }</g
-                      >
-                      <g class="walker__legs-a"
-                        >{
-                          girlLegsA.map((r) => (
-                            <rect
-                              x={r.x}
-                              y={r.y}
-                              width={r.w}
-                              height="1"
-                              fill={r.c}
-                            />
-                          ))
-                        }</g
-                      >
-                      <g class="walker__legs-b"
-                        >{
-                          girlLegsB.map((r) => (
-                            <rect
-                              x={r.x}
-                              y={r.y}
-                              width={r.w}
-                              height="1"
-                              fill={r.c}
-                            />
-                          ))
-                        }</g
+                    <!-- tanah -->
+                    <rect
+                      x="-20"
+                      y={GROUND}
+                      width={WORLD_W + 40}
+                      height={240 - GROUND}
+                      fill="url(#dirt)"></rect>
+                    <rect
+                      x="-20"
+                      y={GROUND}
+                      width={WORLD_W + 40}
+                      height="7"
+                      fill="#6aa84f"></rect>
+                    <rect
+                      x="-20"
+                      y={GROUND + 7}
+                      width={WORLD_W + 40}
+                      height="2"
+                      fill="#4f8a3a"></rect>
+
+                    <!-- papan mulai -->
+                    <g transform={`translate(${START_X - 50} ${GROUND - 34})`}>
+                      <rect x="14" y="16" width="4" height="18" fill="#5a3d27"
+                      ></rect>
+                      <rect x="0" y="0" width="34" height="17" fill="#8a5d3b"
+                      ></rect>
+                      <rect x="2" y="2" width="30" height="13" fill="#a8764d"
+                      ></rect>
+                      <text x="17" y="12" text-anchor="middle" class="sign-text"
+                        >MULAI</text
                       >
                     </g>
-                  </g>
 
-                  <g class="walker" data-boy>
-                    <g class="walker__flip">
-                      <g class="walker__body"
-                        >{
-                          boyBody.map((r) => (
+                    <!-- rintangan -->
+                    {
+                      obstacles.map((x) => (
+                        <g
+                          transform={`translate(${x - 16} ${GROUND - 17}) scale(3 2.9)`}
+                        >
+                          {rock.map((r) => (
                             <rect
                               x={r.x}
                               y={r.y}
@@ -552,46 +322,85 @@ const rock = toRects(
                               height="1"
                               fill={r.c}
                             />
-                          ))
-                        }</g
-                      >
-                      <g class="walker__legs-a"
-                        >{
-                          boyLegsA.map((r) => (
-                            <rect
-                              x={r.x}
-                              y={r.y}
-                              width={r.w}
-                              height="1"
-                              fill={r.c}
-                            />
-                          ))
-                        }</g
-                      >
-                      <g class="walker__legs-b"
-                        >{
-                          boyLegsB.map((r) => (
-                            <rect
-                              x={r.x}
-                              y={r.y}
-                              width={r.w}
-                              height="1"
-                              fill={r.c}
-                            />
-                          ))
-                        }</g
-                      >
-                    </g>
-                  </g>
+                          ))}
+                        </g>
+                      ))
+                    }
 
-                  <g class="love" data-love>
-                    <path
-                      d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z"
-                      fill="#e26d6d"
-                      transform="scale(2)"></path>
+                    <!-- gereja di ujung -->
+                    <!-- gereja di ujung -->
+                    <image
+                      href="/icon/gereja.png"
+                      x={chapelX - 72}
+                      y={GROUND + 10 - 144}
+                      width="144"
+                      height="144"
+                      preserveAspectRatio="xMidYMax meet"
+                      style="image-rendering: pixelated;"
+                    />
+
+                    <!-- checkpoint: tiang bendera -->
+                    {
+                      cpX.map((x, i) => (
+                        <g
+                          class="flag"
+                          data-flag={i}
+                          transform={`translate(${x - 34} ${GROUND - 64})`}
+                        >
+                          <rect
+                            x="0"
+                            y="0"
+                            width="3"
+                            height="64"
+                            fill="#e9e4da"
+                          />
+                          <rect
+                            x="-1"
+                            y="-4"
+                            width="5"
+                            height="5"
+                            fill="#e8c07a"
+                          />
+                          <path class="flag__cloth" d="M3 4h20v6h-4v6h4v6H3z" />
+                          <text x="10" y="16" class="flag__num">
+                            {i + 1}
+                          </text>
+                          <rect
+                            x="-4"
+                            y="60"
+                            width="11"
+                            height="4"
+                            fill="#6b6259"
+                          />
+                        </g>
+                      ))
+                    }
                   </g>
-                </g>
-              </svg>
+                </svg>
+
+                <!-- Karakter: gambar, diposisikan oleh JavaScript -->
+                <img
+                  class="walker walker--girl"
+                  data-girl
+                  src="/icon/cewek.png"
+                  alt=""
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+                <img
+                  class="walker walker--boy"
+                  data-boy
+                  src="/icon/cowok.png"
+                  alt=""
+                  width="48"
+                  height="48"
+                  decoding="async"
+                />
+
+                <!-- Hati saat bersama -->
+                <span class="love" data-love aria-hidden="true">♥</span>
+              </div>
 
               <!-- Dialog -->
               <div class="dialog">
@@ -639,30 +448,6 @@ const rock = toRects(
 </PhotoSection>
 
 <style>
-  /* ---------- Polaroid ---------- */
-  .polaroid {
-    width: min(74cqi, 16rem);
-    margin: 0 auto 3rem;
-    padding: 0.7rem 0.7rem 0;
-    background: var(--paper);
-    border-radius: 3px;
-    box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.6);
-    rotate: -3deg;
-  }
-  .polaroid img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-  }
-  .polaroid figcaption {
-    padding: 0.6rem 0 0.75rem;
-    text-align: center;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.05rem;
-    color: var(--ink);
-  }
-
   /* ---------- Versi teks (tanpa JavaScript) ---------- */
   .story-list {
     list-style: none;
@@ -832,6 +617,7 @@ const rock = toRects(
     display: flex;
     align-items: center;
     gap: 3px;
+    margin-left: auto;
   }
   .hud__chapter {
     margin-right: 0.35rem;
@@ -849,10 +635,16 @@ const rock = toRects(
   }
 
   /* peta */
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 300 / 180;
+    overflow: hidden;
+  }
   .game {
     display: block;
     width: 100%;
-    aspect-ratio: 300 / 180;
+    height: 100%;
   }
   .sign-text {
     font-family: "Pixelify Sans", monospace;
@@ -874,53 +666,49 @@ const rock = toRects(
     fill: var(--accent);
   }
 
-  .walker__flip {
-    transform-box: fill-box;
-    transform-origin: center;
+  /* karakter gambar: posisi di-set JavaScript (left & bottom dalam persen) */
+  .walker {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 20%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    pointer-events: none;
+    transform-origin: center bottom;
+    will-change: transform;
   }
-  .walker.is-left .walker__flip {
+  .walker--girl {
+    z-index: 2;
+  }
+  .walker--boy {
+    z-index: 3;
+  }
+  .walker.is-left {
     transform: scaleX(-1);
   }
-  .walker__legs-b {
-    opacity: 0;
-  }
-  .tv-track.is-walking .walker.is-moving .walker__legs-a {
-    animation: legA 0.32s steps(1, end) infinite;
-  }
-  .tv-track.is-walking .walker.is-moving .walker__legs-b {
-    animation: legB 0.32s steps(1, end) infinite;
-  }
-  .tv-track.is-walking .walker.is-moving .walker__body {
+  .tv-track.is-walking .walker.is-moving {
     animation: bob 0.32s steps(1, end) infinite;
-  }
-  @keyframes legA {
-    0% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
-    }
-  }
-  @keyframes legB {
-    0% {
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
   }
   @keyframes bob {
     0% {
-      transform: translateY(0);
+      translate: 0 0;
     }
     50% {
-      transform: translateY(-1px);
+      translate: 0 -2%;
     }
   }
 
   .love {
+    position: absolute;
+    z-index: 4;
+    color: #e26d6d;
+    font-size: 1rem;
+    line-height: 1;
     opacity: 0;
     transition: opacity 0.3s;
+    pointer-events: none;
   }
   .love.is-on {
     opacity: 1;
@@ -1080,19 +868,19 @@ const rock = toRects(
     };
     const N = data.milestones.length;
     const WALK = 0.6; // 60% scroll tiap bab dipakai berjalan, sisanya berhenti membaca dialog
-    const SCALE = 2; // besar karakter
-    const PARTNER = 22; // jarak wanita di depan pria
-    const CAMERA = 0.3; // posisi pria di layar (30% dari kiri), sisanya "tidak terlihat" di depan
-    const JUMP_H = 34; // tinggi lompatan
+    const PARTNER = 22; // jarak wanita di depan pria (koordinat dunia)
+    const CAMERA = 0.3; // posisi pria di layar (30% dari kiri)
+    const JUMP_H = 34; // tinggi lompatan (koordinat dunia)
     const JUMP_W = 34; // setengah lebar lompatan
+    const SPRITE = 96; // lebar karakter dalam koordinat dunia (sesuai viewBox)
 
     const tv = track.querySelector<HTMLElement>("[data-tv]")!;
     const layers = Array.from(
       track.querySelectorAll<SVGGElement>("[data-layer]"),
     );
-    const boy = track.querySelector<SVGGElement>("[data-boy]")!;
-    const girl = track.querySelector<SVGGElement>("[data-girl]")!;
-    const love = track.querySelector<SVGGElement>("[data-love]")!;
+    const boy = track.querySelector<HTMLImageElement>("[data-boy]")!;
+    const girl = track.querySelector<HTMLImageElement>("[data-girl]")!;
+    const love = track.querySelector<HTMLElement>("[data-love]")!;
     const flags = Array.from(
       track.querySelectorAll<SVGGElement>("[data-flag]"),
     );
@@ -1118,25 +906,18 @@ const rock = toRects(
       return 0;
     };
 
-    const place = (el: SVGGElement, x: number) => {
-      const y = data.ground - jumpAt(x);
-      el.setAttribute(
-        "transform",
-        `translate(${x - 6 * SCALE} ${y - 16 * SCALE}) scale(${SCALE})`,
-      );
-      return y;
-    };
+    // ubah koordinat dunia ke persen layar (viewBox lebarnya VIEW_W)
+    const toPct = (worldX: number) => ((worldX - cam) / data.viewW) * 100;
+    let cam = 0;
 
-    // posisi pria (koordinat dunia) berdasarkan progres scroll
-    const positionAt = (progress: number) => {
-      const per = 1 / N;
-      const idx = Math.min(Math.floor(progress / per), N - 1);
-      const local = (progress - idx * per) / per;
-      const t = Math.min(local / WALK, 1);
-      const from = idx === 0 ? data.startX : data.cpX[idx - 1];
-      const x = from + (data.cpX[idx] - from) * t;
-      const reached = t >= 1 ? idx : idx - 1;
-      return { x, reached, walking: t > 0 && t < 1 };
+    // taruh karakter: left = posisi tengah karakter, bottom = di atas tanah
+    const place = (el: HTMLImageElement, x: number) => {
+      const y = jumpAt(x); // tinggi lompatan di atas tanah
+      const leftPct = toPct(x - SPRITE / 2);
+      const bottomPct = (y / 180) * 100 + ((240 - data.ground) / 180) * 100;
+      el.style.left = `${leftPct}%`;
+      el.style.bottom = `${bottomPct}%`;
+      return y;
     };
 
     /* ---------- Dialog dengan efek mesin ketik ---------- */
@@ -1165,7 +946,7 @@ const rock = toRects(
     const showDialog = (index: number) => {
       if (index === shownIndex) return;
       shownIndex = index;
-      window.clearInterval(typer); // hentikan ketikan yang masih berjalan
+      window.clearInterval(typer);
       nextEl.classList.remove("is-on");
 
       if (index < 0) {
@@ -1220,7 +1001,7 @@ const rock = toRects(
       const together = reached >= 0;
 
       // kamera mengikuti pria; dunia & lapisan latar bergeser (parallax)
-      const cam = Math.min(
+      cam = Math.min(
         Math.max(x - data.viewW * CAMERA, 0),
         data.worldW - data.viewW,
       );
@@ -1232,21 +1013,21 @@ const rock = toRects(
       );
 
       // pria selalu menghadap ke kanan (arah perjalanan)
-      const boyY = place(boy, x);
+      place(boy, x);
       boy.classList.toggle("is-moving", walking);
 
       // wanita: menunggu di checkpoint 1 (menghadap pria), lalu berjalan di sampingnya
       const girlX = together ? x + PARTNER : data.cpX[0] + PARTNER;
       place(girl, girlX);
-      girl.classList.toggle("is-left", !together || !walking); // menunggu / berhenti: menoleh ke pria
+      girl.classList.toggle("is-left", !together || !walking);
       girl.classList.toggle("is-moving", together && walking);
 
       // hati di antara mereka saat berhenti bersama
+      const heartX = x + PARTNER / 2;
+      const heartY = jumpAt(x) + 16 * 2 + 16; // di atas kepala
       love.classList.toggle("is-on", together && !walking);
-      love.setAttribute(
-        "transform",
-        `translate(${x + PARTNER / 2 - 7} ${boyY - 16 * SCALE - 16})`,
-      );
+      love.style.left = `${toPct(heartX)}%`;
+      love.style.bottom = `${((heartY + (240 - data.ground)) / 180) * 100}%`;
 
       flags.forEach((f, i) => f.classList.toggle("is-reached", i <= reached));
       hearts.forEach((h, i) => h.classList.toggle("is-on", i <= reached));
@@ -1272,6 +1053,18 @@ const rock = toRects(
       }
       lastX = x;
     };
+
+    // posisi pria (koordinat dunia) berdasarkan progres scroll
+    function positionAt(progress: number) {
+      const per = 1 / N;
+      const idx = Math.min(Math.floor(progress / per), N - 1);
+      const local = (progress - idx * per) / per;
+      const t = Math.min(local / WALK, 1);
+      const from = idx === 0 ? data.startX : data.cpX[idx - 1];
+      const x = from + (data.cpX[idx] - from) * t;
+      const reached = t >= 1 ? idx : idx - 1;
+      return { x, reached, walking: t > 0 && t < 1 };
+    }
 
     const onScroll = () => {
       if (!ticking) {

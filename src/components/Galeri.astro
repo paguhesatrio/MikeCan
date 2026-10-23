@@ -1,10 +1,20 @@
 ---
-import { wedding1 } from '../data/wedding';
-import SectionHead from './ui/SectionHead.astro';
+import { wedding1 } from "../data/wedding";
+import SectionHead from "./ui/SectionHead.astro";
 
 const photos = wedding1.photos.gallery.slice(0, 8);
 const background = wedding1.photos.background;
-const INTERVAL = 2500; // ms
+
+// Susunan 3 - 3 - 2: tentukan arah masuk tiap foto
+// baris 1-2 : kiri = dari kiri, tengah = dari atas, kanan = dari kanan
+// baris 3   : foto kiri dari kiri, foto kanan dari kanan
+const dirOf = (i: number) => {
+  if (i >= 6) return i === 6 ? "from-left" : "from-right"; // dua foto besar di baris terakhir
+  const col = i % 3; // 0 = kiri, 1 = tengah, 2 = kanan
+  if (col === 0) return "from-left";
+  if (col === 2) return "from-right";
+  return "from-top";
+};
 ---
 
 <section
@@ -16,42 +26,46 @@ const INTERVAL = 2500; // ms
   <div class="gallery__bg" aria-hidden="true"></div>
 
   <div class="container">
-    <SectionHead id="galeri-title" title="Galeri" subtitle="Momen kebersamaan kami." />
+    <div class="reveal-item" style="--i: 0">
+      <SectionHead
+        id="galeri-title"
+        title="Galeri"
+        subtitle="Momen kebersamaan kami."
+      />
+    </div>
 
-    <div class="deck-wrap">
-      <div
-        class="deck"
-        data-deck
-        data-interval={INTERVAL}
-        tabindex="0"
-        aria-label="Tumpukan foto. Gunakan panah kiri dan kanan untuk berpindah."
-      >
-        {
-          photos.map((src, i) => (
-            <button type="button" class="card" data-card aria-label={`Foto ${i + 1}`}>
+    <!-- Susunan 3 - 3 - 2: baris 1 dan 2 berisi 3 foto, baris 3 berisi 2 foto -->
+    <div class="mosaic">
+      {
+        photos.map((src, i) => {
+          const isLastRow = i >= 6;
+          return (
+            <button
+              type="button"
+              class={`shot ${isLastRow ? "shot--half" : "shot--third"} reveal-item ${dirOf(i)}`}
+              style={`--i: ${i + 1}`}
+              data-shot
+              aria-label={`Lihat foto ${i + 1}`}
+            >
               <img
                 src={src}
                 alt={`Foto prewed ${i + 1}`}
-                width="800"
-                height="1000"
+                width="600"
+                height="800"
                 loading="lazy"
                 decoding="async"
               />
             </button>
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="deck-controls">
-      <button type="button" class="deck-btn" data-deck-prev aria-label="Foto sebelumnya">‹</button>
-      <span class="deck-count" data-deck-count>1 / {photos.length}</span>
-      <button type="button" class="deck-btn" data-deck-next aria-label="Foto berikutnya">›</button>
+          );
+        })
+      }
     </div>
   </div>
 
   <dialog class="gallery__dialog" aria-label="Pratinjau foto">
-    <button type="button" class="gallery__close" aria-label="Tutup">&times;</button>
+    <button type="button" class="gallery__close" aria-label="Tutup"
+      >&times;</button
+    >
     <img class="gallery__full" alt="" />
   </dialog>
 </section>
@@ -80,90 +94,78 @@ const INTERVAL = 2500; // ms
     background: rgb(12 11 10 / 0.744);
   }
 
-  /* ---------- Tumpukan kartu ---------- */
-  .deck-wrap {
-    padding: 1rem 0 0.5rem;
-  }
-  .deck {
-    position: relative;
-    width: min(100%, 20rem);
-    aspect-ratio: 4 / 5;
-    margin: 0 auto;
-    touch-action: pan-y;
-    user-select: none;
-  }
-  .deck:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 8px;
+  /* ---------- Mozaik foto: grid 6 kolom ----------
+     baris 1 : 3 foto (masing-masing 2 kolom)
+     baris 2 : 3 foto (masing-masing 2 kolom)
+     baris 3 : 2 foto (masing-masing 3 kolom) */
+  .mosaic {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 1.5rem;
   }
 
-  .card {
-    position: absolute;
-    inset: 0;
-    padding: 0.6rem;
+  .shot {
+    position: relative;
+    padding: 0;
     border: 0;
-    border-radius: 8px;
-    background: #f5efe4;
-    box-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.7);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #1a1a1a;
     cursor: pointer;
-    transform-origin: center;
-    transform: translate(var(--x, 0), var(--y, 0)) rotate(var(--r, 0deg)) scale(var(--s, 1));
-    transition:
-      transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
-      opacity 0.3s ease;
+    aspect-ratio: 3 / 4;
   }
-  .card img {
+  .shot--third {
+    grid-column: span 2;
+  }
+  .shot--half {
+    grid-column: span 3;
+  }
+  .shot img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 4px;
-    pointer-events: none;
+    transition: transform 0.6s ease;
   }
-  .card:focus-visible {
+  @media (hover: hover) {
+    .shot:hover img {
+      transform: scale(1.03);
+    }
+  }
+  .shot:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 3px;
   }
-  /* kartu teratas yang sedang dibuang ke kanan */
-  .card.is-out {
-    pointer-events: none;
-    transform: translate(130%, -8%) rotate(18deg);
+
+  /* ---------- Efek masuk saat section terlihat (lebih lambat) ---------- */
+  :global(.js) .reveal-item {
     opacity: 0;
+    transition:
+      opacity 1.4s ease,
+      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--i, 0) * 260ms);
   }
-  /* kartu di belakang tidak bisa diklik */
-  .card:not([data-top]) {
-    pointer-events: none;
+  :global(.js) .reveal-item.from-top {
+    transform: translateY(-80px);
+  }
+  :global(.js) .reveal-item.from-left {
+    transform: translateX(-110px);
+  }
+  :global(.js) .reveal-item.from-right {
+    transform: translateX(110px);
+  }
+  :global(.js) .gallery.is-visible .reveal-item {
+    opacity: 1;
+    transform: none;
   }
 
-  .deck-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1.25rem;
-  }
-  .deck-btn {
-    width: 2.6rem;
-    height: 2.6rem;
-    border: 0;
-    border-radius: 50%;
-    background: rgb(255 255 255 / 0.15);
-    color: #fff;
-    font-size: 1.4rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  .deck-btn:hover,
-  .deck-btn:focus-visible {
-    background: rgb(255 255 255 / 0.3);
-  }
-  .deck-count {
-    min-width: 5ch;
-    text-align: center;
-    color: #fff;
-    font-size: 0.9rem;
-    letter-spacing: 0.05em;
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .reveal-item {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
   }
 
   /* ---------- Pratinjau foto penuh ---------- */
@@ -202,199 +204,42 @@ const INTERVAL = 2500; // ms
 </style>
 
 <script>
-  const deck = document.querySelector<HTMLElement>("[data-deck]");
+  const section = document.getElementById("galeri");
+  const shots = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-shot]"),
+  );
+  const dialog = document.querySelector<HTMLDialogElement>(".gallery__dialog");
+  const full = document.querySelector<HTMLImageElement>(".gallery__full");
+  const close = document.querySelector<HTMLButtonElement>(".gallery__close");
 
-  if (deck) {
-    const cards = Array.from(deck.querySelectorAll<HTMLButtonElement>("[data-card]"));
-    const countEl = document.querySelector<HTMLElement>("[data-deck-count]");
-    const btnNext = document.querySelector<HTMLButtonElement>("[data-deck-next]");
-    const btnPrev = document.querySelector<HTMLButtonElement>("[data-deck-prev]");
-    const dialog = document.querySelector<HTMLDialogElement>(".gallery__dialog");
-    const full = document.querySelector<HTMLImageElement>(".gallery__full");
-    const close = document.querySelector<HTMLButtonElement>(".gallery__close");
+  if (section) {
+    // Fade in saat section mulai terlihat, lalu observer dilepas
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          section.classList.add("is-visible");
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(section);
+  }
 
-    if (countEl && btnNext && btnPrev && dialog && full && close) {
-      const INTERVAL = Number(deck.dataset.interval) || 5000;
-      const N = cards.length;
-      const VISIBLE = 4;
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      const order = cards.map((_, i) => i); // order[0] = kartu paling atas
-      let animating = false;
-      let timer = 0;
-      let hovering = false;
-      let focused = false;
-      let pressed = false;
-      let startX = 0;
-      let moved = false;
-
-      const updateCount = () => {
-        countEl.textContent = `${order[0] + 1} / ${N}`;
-      };
-
-      const layout = () => {
-        order.forEach((idx, pos) => {
-          const card = cards[idx];
-          const depth = Math.min(pos, VISIBLE);
-          card.style.setProperty("--x", `${depth * 8}px`);
-          card.style.setProperty("--y", `${depth * 6}px`);
-          card.style.setProperty("--r", `${(depth % 2 ? 1 : -1) * depth * 2}deg`);
-          card.style.setProperty("--s", `${1 - depth * 0.03}`);
-          card.style.zIndex = String(N - pos);
-          card.style.opacity = pos > VISIBLE ? "0" : "1";
-          if (pos === 0) card.setAttribute("data-top", "");
-          else card.removeAttribute("data-top");
-        });
-      };
-
-      const next = () => {
-        if (animating || N < 2) return;
-        animating = true;
-        const top = cards[order[0]];
-        top.classList.add("is-out");
-        window.setTimeout(
-          () => {
-            order.push(order.shift()!);
-            top.style.transition = "none";
-            top.classList.remove("is-out");
-            layout();
-            void top.offsetWidth;
-            top.style.transition = "";
-            animating = false;
-            updateCount();
-          },
-          reduceMotion ? 0 : 380,
-        );
-      };
-
-      const prev = () => {
-        if (animating || N < 2) return;
-        order.unshift(order.pop()!);
-        layout();
-        updateCount();
-      };
-
-      /* ---------- Autoplay ---------- */
-      const stop = () => window.clearInterval(timer);
-
-      const start = () => {
-        stop();
-        timer = window.setInterval(() => {
-          if (!document.hidden && !dialog.open) next();
-        }, INTERVAL);
-      };
-
-      const sync = () => {
-        if (hovering || focused || pressed || dialog.open || N < 2) stop();
-        else start();
-      };
-
-      const manual = (fn: () => void) => () => {
-        fn();
-        if (!hovering && !focused && !pressed && !dialog.open) start();
-      };
-
-      /* ---------- Lihat foto penuh ---------- */
-      const openFull = (card: HTMLButtonElement) => {
-        const img = card.querySelector("img");
+  if (dialog && full && close) {
+    shots.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const img = btn.querySelector("img");
         if (!img) return;
         full.src = img.currentSrc || img.src;
         full.alt = img.alt;
         dialog.showModal();
-        stop();
-      };
+      });
+    });
 
-      // setiap kartu punya listener sendiri; hanya kartu paling atas yang bisa dibuka
-      cards.forEach((card) => {
-        card.addEventListener("click", () => {
-          if (moved) return;
-          if (!card.hasAttribute("data-top")) return;
-          openFull(card);
-        });
-      });
-
-      /* ---------- Geser dengan mouse atau sentuhan ---------- */
-      deck.addEventListener("pointerdown", (e) => {
-        pressed = true;
-        moved = false;
-        startX = e.clientX;
-        sync();
-      });
-      deck.addEventListener("pointermove", (e) => {
-        if (pressed && Math.abs(e.clientX - startX) > 10) moved = true;
-      });
-      deck.addEventListener("pointerup", (e) => {
-        pressed = false;
-        const dx = e.clientX - startX;
-        if (Math.abs(dx) > 40) {
-          if (dx < 0) manual(next)();
-          else manual(prev)();
-        }
-        if (e.pointerType !== "mouse") {
-          hovering = false;
-        }
-        sync();
-      });
-      deck.addEventListener("pointercancel", () => {
-        pressed = false;
-        hovering = false;
-        sync();
-      });
-      // hover hanya untuk mouse; di HP tidak ada hover
-      deck.addEventListener("pointerenter", (e) => {
-        if (e.pointerType !== "mouse") return;
-        hovering = true;
-        sync();
-      });
-      deck.addEventListener("pointerleave", (e) => {
-        pressed = false;
-        if (e.pointerType !== "mouse") return;
-        hovering = false;
-        sync();
-      });
-      deck.addEventListener("focusin", () => {
-        focused = true;
-        sync();
-      });
-      deck.addEventListener("focusout", () => {
-        focused = false;
-        sync();
-      });
-
-      // lepas fokus setelah sentuhan agar autoplay tidak tertahan
-      deck.addEventListener(
-        "touchend",
-        () => {
-          const active = document.activeElement;
-          if (active instanceof HTMLElement && deck.contains(active)) {
-            active.blur();
-          }
-        },
-        { passive: true },
-      );
-
-      btnNext.addEventListener("click", manual(next));
-      btnPrev.addEventListener("click", manual(prev));
-
-      deck.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowRight") {
-          e.preventDefault();
-          manual(next)();
-        } else if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          manual(prev)();
-        }
-      });
-
-      close.addEventListener("click", () => dialog.close());
-      dialog.addEventListener("click", (e) => {
-        if (e.target === dialog) dialog.close();
-      });
-      dialog.addEventListener("close", sync);
-
-      layout();
-      updateCount();
-      sync();
-    }
+    close.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
   }
 </script>

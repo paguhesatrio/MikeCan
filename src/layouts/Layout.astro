@@ -1,27 +1,34 @@
 ---
-import '@fontsource/fraunces/latin-300.css';
-import '@fontsource/fraunces/latin-400.css';
-import '@fontsource/fraunces/latin-300-italic.css';
-import '@fontsource/figtree/latin-400.css';
-import '@fontsource/figtree/latin-500.css';
-import '@fontsource/figtree/latin-600.css';
-import '../styles/global.css';
-import { wedding } from '../data/wedding';
+import "@fontsource/fraunces/latin-300.css";
+import "@fontsource/fraunces/latin-400.css";
+import "@fontsource/fraunces/latin-300-italic.css";
+import "@fontsource/figtree/latin-400.css";
+import "@fontsource/figtree/latin-500.css";
+import "@fontsource/figtree/latin-600.css";
+import "../styles/global.css";
+import { wedding } from "../data/wedding";
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const { title = wedding.site.title, description = wedding.site.description } = Astro.props;
-const ogImage = new URL(wedding.photos.cover, Astro.site ?? Astro.url).toString();
+const { title = wedding.site.title, description = wedding.site.description } =
+  Astro.props;
+const ogImage = new URL(
+  wedding.photos.cover,
+  Astro.site ?? Astro.url,
+).toString();
 ---
 
 <!doctype html>
 <html lang="id">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
     <meta name="theme-color" content="#151412" />
@@ -30,14 +37,17 @@ const ogImage = new URL(wedding.photos.cover, Astro.site ?? Astro.url).toString(
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="https://mike-can.vercel.app/images/main/7.png" />
+    <meta
+      property="og:image"
+      content="https://mike-can.vercel.app/images/main/7.png"
+    />
     <meta property="og:locale" content="id_ID" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="preload" as="image" href={wedding.photos.cover} />
 
     <script is:inline>
-      document.documentElement.classList.add('js');
+      document.documentElement.classList.add("js");
     </script>
   </head>
   <body data-panel={wedding.desktopPanel}>
