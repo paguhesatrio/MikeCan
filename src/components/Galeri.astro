@@ -285,13 +285,13 @@ const INTERVAL = 2500; // ms
       };
 
       const sync = () => {
-        if (hovering || focused || dialog.open || N < 2) stop();
+        if (hovering || focused || pressed || dialog.open || N < 2) stop();
         else start();
       };
 
       const manual = (fn: () => void) => () => {
         fn();
-        if (!hovering && !focused && !dialog.open) start();
+        if (!hovering && !focused && !pressed && !dialog.open) start();
       };
 
       /* ---------- Lihat foto penuh ---------- */
@@ -318,6 +318,7 @@ const INTERVAL = 2500; // ms
         pressed = true;
         moved = false;
         startX = e.clientX;
+        sync();
       });
       deck.addEventListener("pointermove", (e) => {
         if (pressed && Math.abs(e.clientX - startX) > 10) moved = true;
@@ -329,14 +330,26 @@ const INTERVAL = 2500; // ms
           if (dx < 0) manual(next)();
           else manual(prev)();
         }
+        if (e.pointerType !== "mouse") {
+          hovering = false;
+        }
+        sync();
       });
-      deck.addEventListener("pointerenter", () => {
+      deck.addEventListener("pointercancel", () => {
+        pressed = false;
+        hovering = false;
+        sync();
+      });
+      // hover hanya untuk mouse; di HP tidak ada hover
+      deck.addEventListener("pointerenter", (e) => {
+        if (e.pointerType !== "mouse") return;
         hovering = true;
         sync();
       });
-      deck.addEventListener("pointerleave", () => {
-        hovering = false;
+      deck.addEventListener("pointerleave", (e) => {
         pressed = false;
+        if (e.pointerType !== "mouse") return;
+        hovering = false;
         sync();
       });
       deck.addEventListener("focusin", () => {
@@ -347,6 +360,18 @@ const INTERVAL = 2500; // ms
         focused = false;
         sync();
       });
+
+      // lepas fokus setelah sentuhan agar autoplay tidak tertahan
+      deck.addEventListener(
+        "touchend",
+        () => {
+          const active = document.activeElement;
+          if (active instanceof HTMLElement && deck.contains(active)) {
+            active.blur();
+          }
+        },
+        { passive: true },
+      );
 
       btnNext.addEventListener("click", manual(next));
       btnPrev.addEventListener("click", manual(prev));

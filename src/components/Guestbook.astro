@@ -17,10 +17,11 @@ import PhotoSection from './ui/PhotoSection.astro';
           id="wish-name"
           name="name"
           type="text"
-          autocomplete="name"
           maxlength="80"
           placeholder="Nama Anda"
           required
+          readonly
+          tabindex="-1"
           aria-describedby="wish-name-error"
         />
         <p class="field__error" id="wish-name-error" hidden></p>
@@ -327,14 +328,9 @@ import PhotoSection from './ui/PhotoSection.astro';
     let hasMore = false;
     let busy = false;
 
-    // Nama tamu dari link undangan (?to=Nama). Jika ada, kunci agar tidak bisa diedit.
+    // Nama tamu dari link undangan (?to=Nama). Input sudah readonly di markup.
     const guest = (new URLSearchParams(location.search).get('to') ?? '').trim().slice(0, 80);
-    if (guest) {
-      nameInput.value = guest;
-      nameInput.readOnly = true;
-      nameInput.tabIndex = -1;
-      nameInput.removeAttribute('autocomplete');
-    }
+    if (guest) nameInput.value = guest;
 
     const renderCount = () => {
       countEl.textContent = total ? `${total} ucapan dan doa` : '';
@@ -454,10 +450,6 @@ import PhotoSection from './ui/PhotoSection.astro';
       msgError.hidden = true;
       msgInput.setAttribute('aria-invalid', 'false');
     });
-    nameInput.addEventListener('input', () => {
-      nameError.hidden = true;
-      nameInput.setAttribute('aria-invalid', 'false');
-    });
 
     const fail = (input: HTMLElement, el: HTMLElement, msg: string) => {
       el.textContent = msg;
@@ -472,14 +464,18 @@ import PhotoSection from './ui/PhotoSection.astro';
       const data = new FormData(form);
       if (cleanText(data.get('website'))) return;
 
-      // Pakai nama dari undangan jika tersedia, agar tidak bisa diakali lewat DevTools.
-      const name = guest ? cleanText(guest) : cleanText(data.get('name'));
+      // Nama hanya dari link undangan (?to=Nama), tidak bisa diubah dari form.
+      const name = cleanText(guest);
       const message = cleanMultiline(data.get('message'));
       let firstInvalid: HTMLElement | null = null;
 
       if (name.length < 2) {
-        fail(nameInput, nameError, 'Mohon isi nama Anda (minimal 2 huruf).');
-        if (!nameInput.readOnly) firstInvalid = nameInput;
+        fail(
+          nameInput,
+          nameError,
+          'Nama tamu tidak ditemukan. Silakan buka lewat link undangan Anda.',
+        );
+        firstInvalid = nameInput;
       }
       if (message.length < 3) {
         fail(msgInput, msgError, 'Mohon tuliskan ucapan atau doa Anda.');

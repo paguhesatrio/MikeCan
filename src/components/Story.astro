@@ -1165,6 +1165,9 @@ const rock = toRects(
     const showDialog = (index: number) => {
       if (index === shownIndex) return;
       shownIndex = index;
+      window.clearInterval(typer); // hentikan ketikan yang masih berjalan
+      nextEl.classList.remove("is-on");
+
       if (index < 0) {
         label.textContent = "Mulai";
         nameEl.textContent = "Cerita Kami";
@@ -1175,6 +1178,14 @@ const rock = toRects(
       label.textContent = `Kisah ${index + 1} · ${m.date}`;
       nameEl.textContent = m.title;
       typeText(m.text);
+    };
+
+    // pindah dialog hanya jika posisi stabil selama 250ms, supaya getaran scroll tidak memicu pengetikan ulang
+    let switchTimer = 0;
+    const requestDialog = (index: number) => {
+      window.clearTimeout(switchTimer);
+      if (index === shownIndex) return;
+      switchTimer = window.setTimeout(() => showDialog(index), 250);
     };
 
     /* ---------- TV menyala saat pertama kali terlihat ---------- */
@@ -1241,7 +1252,8 @@ const rock = toRects(
       hearts.forEach((h, i) => h.classList.toggle("is-on", i <= reached));
       chapter.textContent = `${Math.max(reached + 1, 0)}/${N}`;
 
-      showDialog(reached);
+      requestDialog(reached);
+
       const showHint =
         progress <= 0.02 || (!walking && reached >= 0 && reached < N - 1);
       hint.classList.toggle("is-hidden", !showHint);

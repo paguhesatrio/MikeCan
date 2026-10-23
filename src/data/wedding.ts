@@ -113,7 +113,7 @@ export const wedding = {
     mother: 'Ibu Ropini',
     description:
       'Seorang PNS Sukses Di Kabupaten Landak',
-    photo: '/images/pengantin/W2.jpg',
+    photo: '/images/pengantin/2.png',
     instagram: 'cancandrak',
   } satisfies Person,
 
@@ -126,12 +126,12 @@ export const wedding = {
     mother: 'Ibu Amisna',
     description:
       'Menejer Keuangan CU BONAVENTURA di PALOH, dan kini bersiap Mengantur keuangan Rumah bersama Candra.',
-    photo: '/images/pengantin/W1.jpg',
+    photo: '/images/pengantin/1.png',
     instagram: 'mikamayalestari',
   } satisfies Person,
 
   story: {
-    photo: '/images/story.svg',
+    // photo: '/images/story.svg',
     photoAlt: 'Mika dan Candra berjalan bergandengan tangan',
     lead:
       'Kami bertemu di tempat yang sederhana, lalu belajar bahwa kasih bertumbuh lewat hal-hal kecil yang dilakukan dengan setia.',
@@ -191,7 +191,7 @@ export const wedding = {
     // Nomor WhatsApp dalam format internasional tanpa tanda + atau spasi.
     whatsapp: '6282154392616',
     whatsappMessage:
-      'Halo Mika & Candra, saya [nama] ingin mengonfirmasi bahwa saya telah mengirimkan tanda kasih untuk pernikahan kalian. Tuhan Yesus memberkati.',
+      'Halo Mika & Candra, saya [nama] ingin mengonfirmasi bahwa saya telah mengirimkan tanda kasih untuk pernikahan kalian. God Bless You.',
   },
 
   closing: {
